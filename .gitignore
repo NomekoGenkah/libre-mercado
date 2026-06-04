@@ -1,0 +1,18 @@
+# Entorno / credenciales
+.env
+
+# PHP
+vendor/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Logs y temporales
+*.log
+.DS_Store
+
+# IDE
+.idea/
+.vscode/

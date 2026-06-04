@@ -1,0 +1,163 @@
+# ===========================================================================
+#  Libre Mercado — orquestación de la red distribuida
+#  Red: red_distribuida (bridge). 1 nodo central + 3 sucursales + 1 app PHP.
+# ===========================================================================
+
+# Healthcheck reutilizable para cada instancia MariaDB (mysqladmin ping).
+x-mariadb-healthcheck: &mariadb-healthcheck
+  test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MARIADB_ROOT_PASSWORD --silent"]
+  interval: 10s
+  timeout: 5s
+  retries: 10
+  start_period: 30s
+
+services:
+  # -------------------------------------------------------------------------
+  #  NODO CENTRAL — tablas globales (productos, clientes, ventas, etc.)
+  # -------------------------------------------------------------------------
+  nodo_central:
+    image: mariadb:10.6
+    container_name: nodo_central
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${CENTRAL_DB}
+      MARIADB_USER: ${CENTRAL_USER}
+      MARIADB_PASSWORD: ${CENTRAL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./sql/central:/docker-entrypoint-initdb.d:ro
+      - central_data:/var/lib/mysql
+    healthcheck: *mariadb-healthcheck
+    networks:
+      - red_distribuida
+
+  # -------------------------------------------------------------------------
+  #  SUCURSAL NORTE — stock, movimientos, compras, carrito locales
+  # -------------------------------------------------------------------------
+  nodo_sucursal_norte:
+    image: mariadb:10.6
+    container_name: nodo_sucursal_norte
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${NORTE_DB}
+      MARIADB_USER: ${NORTE_USER}
+      MARIADB_PASSWORD: ${NORTE_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./sql/norte:/docker-entrypoint-initdb.d:ro
+      - norte_data:/var/lib/mysql
+    healthcheck: *mariadb-healthcheck
+    networks:
+      - red_distribuida
+
+  # -------------------------------------------------------------------------
+  #  SUCURSAL SUR
+  # -------------------------------------------------------------------------
+  nodo_sucursal_sur:
+    image: mariadb:10.6
+    container_name: nodo_sucursal_sur
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${SUR_DB}
+      MARIADB_USER: ${SUR_USER}
+      MARIADB_PASSWORD: ${SUR_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./sql/sur:/docker-entrypoint-initdb.d:ro
+      - sur_data:/var/lib/mysql
+    healthcheck: *mariadb-healthcheck
+    networks:
+      - red_distribuida
+
+  # -------------------------------------------------------------------------
+  #  SUCURSAL ESTE
+  # -------------------------------------------------------------------------
+  nodo_sucursal_este:
+    image: mariadb:10.6
+    container_name: nodo_sucursal_este
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${ESTE_DB}
+      MARIADB_USER: ${ESTE_USER}
+      MARIADB_PASSWORD: ${ESTE_PASSWORD}
+    ports:
+      - "3309:3306"
+    volumes:
+      - ./sql/este:/docker-entrypoint-initdb.d:ro
+      - este_data:/var/lib/mysql
+    healthcheck: *mariadb-healthcheck
+    networks:
+      - red_distribuida
+
+  # -------------------------------------------------------------------------
+  #  APP PHP — Apache + PHP 8.2, lógica de negocio y API REST
+  #  Espera a que TODOS los nodos estén healthy antes de arrancar.
+  # -------------------------------------------------------------------------
+  app_php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_php
+    restart: unless-stopped
+    depends_on:
+      nodo_central:
+        condition: service_healthy
+      nodo_sucursal_norte:
+        condition: service_healthy
+      nodo_sucursal_sur:
+        condition: service_healthy
+      nodo_sucursal_este:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+    environment:
+      # Puerto interno común a todas las instancias MariaDB
+      DB_PORT: ${DB_PORT}
+      # Hosts internos (nombres de servicio en red_distribuida)
+      CENTRAL_HOST: ${CENTRAL_HOST}
+      NORTE_HOST: ${NORTE_HOST}
+      SUR_HOST: ${SUR_HOST}
+      ESTE_HOST: ${ESTE_HOST}
+      # Credenciales por nodo (las consume src/config/Config.php en Etapa 3)
+      CENTRAL_DB: ${CENTRAL_DB}
+      CENTRAL_USER: ${CENTRAL_USER}
+      CENTRAL_PASSWORD: ${CENTRAL_PASSWORD}
+      NORTE_DB: ${NORTE_DB}
+      NORTE_USER: ${NORTE_USER}
+      NORTE_PASSWORD: ${NORTE_PASSWORD}
+      SUR_DB: ${SUR_DB}
+      SUR_USER: ${SUR_USER}
+      SUR_PASSWORD: ${SUR_PASSWORD}
+      ESTE_DB: ${ESTE_DB}
+      ESTE_USER: ${ESTE_USER}
+      ESTE_PASSWORD: ${ESTE_PASSWORD}
+      # CORS para el frontend Vite
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    networks:
+      - red_distribuida
+
+# ---------------------------------------------------------------------------
+#  Red bridge compartida por todos los contenedores
+# ---------------------------------------------------------------------------
+networks:
+  red_distribuida:
+    driver: bridge
+    name: red_distribuida
+
+# ---------------------------------------------------------------------------
+#  Volúmenes con persistencia de datos por nodo
+# ---------------------------------------------------------------------------
+volumes:
+  central_data:
+  norte_data:
+  sur_data:
+  este_data:
