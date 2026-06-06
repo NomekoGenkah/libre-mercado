@@ -15,10 +15,10 @@ versión orientada a personas.
 - ✅ **Etapa 2 — Schemas SQL** (COMPLETADA)
 - ✅ **Etapa 3 — Capa de conexión PHP** (`config/`) (COMPLETADA)
 - ✅ **Etapa 4 — Router y estructura base PHP** (COMPLETADA)
-- ⬜ Etapa 5 — Controllers CRUD
+- ✅ **Etapa 5 — Controllers CRUD** (COMPLETADA)
 - ⬜ Etapa 6 — Transacciones ACID (Two-Phase Commit)
 - ⬜ Etapa 7 — Endpoint de simulación de fallo CAP
-- ⬜ Etapa 8 — Autenticación con sesiones PHP
+- ✅ **Etapa 8 — Autenticación con sesiones PHP** (COMPLETADA, adelantada)
 - ⬜ Etapa 9 — Frontend React + Vite + Tailwind
 - ⬜ Etapa 10 — Documento de arquitectura CAP (`docs/arquitectura_CAP.md`)
 - ⬜ Etapa 11 — Testing y verificación final
@@ -198,10 +198,16 @@ Checklist end-to-end (ver `README.md`).
 
 ## Rutas API (Etapa 4)
 
+> **Añadidos en la Etapa 5** respecto a la tabla original: `GET /categorias`
+> (apoyo al formulario de productos) y el CRUD completo de proveedores
+> (`GET/PUT/DELETE /proveedores/:id`, antes solo estaban listar y crear).
+
 ```
 POST   /auth/login
 POST   /auth/logout
 GET    /auth/me
+
+GET    /categorias
 
 GET    /productos
 POST   /productos
@@ -232,6 +238,10 @@ GET    /ventas/:id
 
 GET    /proveedores
 POST   /proveedores
+GET    /proveedores/:id
+PUT    /proveedores/:id
+DELETE /proveedores/:id           (borrado lógico)
+
 POST   /compras                   (reabastecimiento)
 GET    /compras
 

@@ -135,6 +135,9 @@ function crearRouter(): Router
     $r->agregar('POST', '/auth/logout', 'AuthController@logout', ['auth' => true]);
     $r->agregar('GET',  '/auth/me',     'AuthController@me',     ['auth' => true]);
 
+    // --- Categorías (apoyo al formulario de productos) ----------------------
+    $r->agregar('GET', '/categorias', 'ProductoController@categorias', ['auth' => true]);
+
     // --- Productos ----------------------------------------------------------
     $r->agregar('GET',    '/productos',     'ProductoController@listar',   ['auth' => true]);
     $r->agregar('POST',   '/productos',     'ProductoController@crear',    ['roles' => ['admin']]);
@@ -174,8 +177,11 @@ function crearRouter(): Router
     $r->agregar('GET',  '/ventas/:id', 'VentaController@obtener',     ['auth' => true]);
 
     // --- Proveedores y compras ---------------------------------------------
-    $r->agregar('GET',  '/proveedores', 'ProveedorController@listar', ['auth' => true]);
-    $r->agregar('POST', '/proveedores', 'ProveedorController@crear',  ['roles' => ['admin', 'bodeguero']]);
+    $r->agregar('GET',    '/proveedores',     'ProveedorController@listar',     ['auth' => true]);
+    $r->agregar('POST',   '/proveedores',     'ProveedorController@crear',      ['roles' => ['admin', 'bodeguero']]);
+    $r->agregar('GET',    '/proveedores/:id', 'ProveedorController@obtener',    ['auth' => true]);
+    $r->agregar('PUT',    '/proveedores/:id', 'ProveedorController@actualizar', ['roles' => ['admin', 'bodeguero']]);
+    $r->agregar('DELETE', '/proveedores/:id', 'ProveedorController@eliminar',   ['roles' => ['admin']]);
     $r->agregar('GET',  '/compras',     'CompraController@listar',    ['auth' => true]);
     $r->agregar('POST', '/compras',     'CompraController@procesarReabastecimiento', ['roles' => ['admin', 'bodeguero']]);
 

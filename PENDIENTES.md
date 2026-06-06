@@ -56,17 +56,34 @@
 > los instancia con `new` y, si la clase aún no existe, responde **501** limpio.
 > Endpoint de diagnóstico: `GET /salud` pingea los 4 nodos.
 
-### BLOQUE B — CRUD de entidades (Requisito 1)
+### BLOQUE B — CRUD de entidades (Requisito 1) ✅ COMPLETADO
 *Cada controller: validación de input, solo prepared statements, try/catch.*
 
-- [ ] **B1. ProductoController** — CRUD + borrado lógico (`activo=0`).
-- [ ] **B2. ClienteController** — CRUD + borrado lógico.
-- [ ] **B3. UsuarioController** — CRUD + borrado lógico + roles.
-- [ ] **B4. ProveedorController** — CRUD + borrado lógico.
-- [ ] **B5. SucursalController** — listar sucursales y su stock.
-- [ ] **B6. StockController** — ver stock por sucursal + ajuste manual.
-- [ ] **B7. CarritoController** — crear carrito, agregar/quitar ítems.
-- [ ] Validar dependencias antes de borrar. Códigos HTTP correctos (200/201/400/401/403/404/409/500).
+- [x] **B1. ProductoController** — CRUD + borrado lógico (`activo=0`) + `GET /categorias`.
+- [x] **B2. ClienteController** — CRUD + borrado lógico (email único → 409).
+- [x] **B3. UsuarioController** — CRUD + borrado lógico + roles (nunca expone `password_hash`).
+- [x] **B4. ProveedorController** — CRUD completo + borrado lógico.
+- [x] **B5. SucursalController** — listar sucursales (agrega los 3 nodos) + stock por sucursal.
+- [x] **B6. StockController** — stock por sucursal (semáforo verde/amarillo/rojo),
+  ajuste manual (transacción local) y `GET /movimientos/:id_suc`.
+- [x] **B7. CarritoController** — crear carrito, agregar/quitar ítems.
+- [x] Validación de input (`helpers/Validador.php`), solo prepared statements,
+  códigos HTTP 200/201/400/404/409 y manejo de duplicados.
+
+> **Notas de implementación del Bloque B:**
+> - `helpers/Validador.php` centraliza la validación de input y traduce los
+>   errores a 400 (y duplicados UNIQUE a 409).
+> - Controllers central: Producto/Cliente/Usuario/Proveedor. Controllers de
+>   sucursal: Sucursal/Stock/Carrito (cruzan con central para nombres/precios).
+> - `getNodoPorSucursal(id_suc)` mapea la sucursal al nodo; los endpoints de
+>   sucursal aceptan `id_suc ∈ {1,2,3}`.
+> - **Carrito**: como el `id_carrito` es autoincremental local de cada nodo (no
+>   único entre sucursales), las operaciones sobre ítems exigen `id_suc`
+>   (en body para agregar, en query `?id_suc=` para quitar).
+> - Lecturas multi-nodo (`GET /sucursales`, `GET /carrito/:id_cli`) son
+>   resilientes: si un nodo está caído lo reportan en `nodos_caidos`.
+> - ⚠️ **Pendiente para probar B end-to-end:** las rutas exigen sesión, así que
+>   hace falta el **Bloque E (login)** o desactivar temporalmente el middleware.
 
 ### BLOQUE C — Transacciones ACID (Requisito 2) ⭐ CRÍTICO PARA LA NOTA
 *Es el corazón distribuido del proyecto. Es lo más valorado en la rúbrica.*
@@ -97,11 +114,16 @@
   comportamiento ante partición, trade-off y evidencia en código
   (`procesarVenta()` y `/debug/simular-fallo`).
 
-### BLOQUE E — Autenticación (apoya CRUD y demo)
-- [ ] **E1. AuthController** — `login()`, `logout()`, `me()` con sesiones PHP.
-- [ ] **E2. Auth helper** — `requerirLogin()` (401), `requerirRol(...)` (403).
-- [ ] **E3. Roles**: admin (total), vendedor (ventas + ver), bodeguero (stock + compras).
-- [ ] Contraseñas con `password_hash()` / `password_verify()`.
+### BLOQUE E — Autenticación (apoya CRUD y demo) ✅ COMPLETADO
+- [x] **E1. AuthController** — `login()`, `logout()`, `me()` con sesiones PHP.
+- [x] **E2. Auth helper** — `requerirLogin()` (401), `requerirRol(...)` (403).
+- [x] **E3. Roles**: admin (total), vendedor (ventas + ver), bodeguero (stock + compras).
+- [x] Contraseñas con `password_hash()` / `password_verify()`.
+
+> **Notas del Bloque E:** `login` responde 401 genérico (no revela si el
+> usuario existe) y regenera el id de sesión al autenticar. Las rutas CRUD ya
+> son probables end-to-end (login con `admin/admin123`). Los guards de rol
+> aplican: `admin` pasa siempre; `vendedor`/`bodeguero` según la ruta.
 
 ### BLOQUE F — Frontend React (para la demo en vivo)
 *No lo pide explícitamente la rúbrica, pero la "Defensa y Demo" lo necesita.*
@@ -118,12 +140,18 @@
 
 ### BLOQUE G — Testing y cierre (Defensa y Demo)
 - [ ] **G1.** Levantar todo con `docker compose up -d` y verificar los 5 nodos.
-- [ ] **G2.** Probar cada CRUD end-to-end (crear/leer/editar/borrar lógico).
-- [ ] **G3.** Probar una venta completa y confirmar que el stock baja atómicamente.
-- [ ] **G4.** Probar `/debug/simular-fallo` y confirmar que el stock NO cambia (rollback).
-- [ ] **G5.** Probar login/roles (admin/vendedor/bodeguero).
-- [ ] **G6.** Actualizar `README.md` con instrucciones de ejecución para la demo.
+- [x] **G2.** Probar cada CRUD end-to-end (crear/leer/editar/borrar lógico). *(cubierto por `tests/e2e/api.sh`)*
+- [ ] **G3.** Probar una venta completa y confirmar que el stock baja atómicamente. *(pendiente Bloque C)*
+- [ ] **G4.** Probar `/debug/simular-fallo` y confirmar que el stock NO cambia (rollback). *(pendiente Bloque D)*
+- [x] **G5.** Probar login/roles (admin/vendedor/bodeguero). *(cubierto por `tests/e2e/api.sh`)*
+- [x] **G6.** Actualizar `README.md` con instrucciones de ejecución y pruebas.
 - [ ] **G7.** Ensayar la defensa: explicar arquitectura distribuida + por qué CP.
+
+> **Infraestructura de pruebas (nueva):** `bash tests/run.sh` corre todo de una.
+> - `tests/unit/` — modulares de PHP puro (mapeo de nodos + `Validador`), se
+>   ejecutan en el contenedor (`./tests` montado en `/var/www/tests`).
+> - `tests/e2e/api.sh` — end-to-end con `curl` (auth, CRUD, 400/401/403/409,
+>   semáforo de stock). Se ampliará con ventas/CAP al cerrar los Bloques C/D.
 
 ---
 

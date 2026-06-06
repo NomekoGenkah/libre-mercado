@@ -30,8 +30,13 @@ El frontend React corre fuera de Docker en `localhost:5173` (Vite).
 
 - ✅ **Etapa 1** — Infraestructura Docker
 - ✅ **Etapa 2** — Schemas SQL + datos de demo (seed)
-- ⬜ Etapas 3–11 (conexión PHP, router, CRUD, transacciones ACID,
-  simulación CAP, auth, frontend, documento CAP, testing)
+- ✅ **Etapa 3** — Capa de conexión PHP (PDO por nodo)
+- ✅ **Etapa 4** — Router y estructura base (front controller)
+- ✅ **Etapa 5** — Controllers CRUD (productos, clientes, usuarios,
+  proveedores, sucursales, stock, carrito)
+- ✅ **Etapa 8** — Autenticación con sesiones PHP + roles
+- ⬜ Etapas 6, 7, 9, 10 (transacciones ACID, simulación CAP, frontend,
+  documento CAP)
 
 ### Credenciales de demo (seed)
 
@@ -70,7 +75,54 @@ docker compose exec app_php ping nodo_sucursal_este -c 2
 curl http://localhost:8080/
 ```
 
-El paso 5 debe devolver un JSON con `"status": "ok"` y los hosts de cada nodo.
+El paso 5 (`GET /`) devuelve un JSON con el estado de la API. Para verificar
+además la conectividad a los 4 nodos de base de datos:
+
+```bash
+curl http://localhost:8080/salud     # { "ok": true, "data": { "nodos": {...} } }
+```
+
+### Iniciar sesión y consumir la API
+
+Las rutas requieren sesión (cookie). Ejemplo con `curl` y un cookie jar:
+
+```bash
+# Login (guarda la cookie de sesión en cookies.txt)
+curl -c cookies.txt -X POST http://localhost:8080/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin123"}'
+
+# Usar la sesión en las siguientes peticiones
+curl -b cookies.txt http://localhost:8080/productos
+curl -b cookies.txt http://localhost:8080/stock/1
+```
+
+## Pruebas
+
+La suite cubre dos niveles y se corre con **un solo comando** (requiere el
+stack levantado):
+
+```bash
+bash tests/run.sh
+```
+
+- **Modulares (unit)** — `tests/unit/`: prueban lógica PHP pura (mapeo de
+  `id_suc` a nodo y todas las reglas del `Validador`), sin tocar la base de
+  datos. Se ejecutan con el `php` del contenedor `app_php` (la carpeta
+  `./tests` se monta en `/var/www/tests`).
+- **End-to-end (e2e)** — `tests/e2e/api.sh`: ejerce la API real con `curl`
+  (salud, login/roles/logout, CRUD de productos y clientes, validación → 400,
+  duplicados → 409, guards de auth → 401/403 y el semáforo de stock).
+
+> Si añadiste el montaje de `./tests` por primera vez, recrea el contenedor
+> para que lo tome: `docker compose up -d`.
+
+También se pueden correr por separado:
+
+```bash
+docker compose exec -T app_php php /var/www/tests/unit/run.php   # solo unit
+bash tests/e2e/api.sh                                            # solo e2e
+```
 
 ### Comandos útiles
 
@@ -89,7 +141,17 @@ docker compose down -v                # detener y borrar volúmenes de datos
 ├── Dockerfile             # imagen PHP 8.2 + Apache (pdo, pdo_mysql, mysqli)
 ├── .env / .env.example    # credenciales y hosts por nodo
 ├── src/                   # código PHP (montado en app_php:/var/www/html)
-│   └── index.php          # placeholder de salud (router real en Etapa 4)
+│   ├── index.php          # front controller (CORS, sesión, ruteo)
+│   ├── router.php         # tabla de rutas → controllers
+│   ├── config/            # Config, Database (PDO por nodo), NodoException
+│   ├── helpers/           # Response, Auth, Validador
+│   ├── middleware/        # AuthMiddleware (guards de sesión/rol)
+│   └── controllers/       # Auth, Producto, Cliente, Usuario, Proveedor,
+│                          #   Sucursal, Stock, Carrito
+├── tests/                 # pruebas (montado en app_php:/var/www/tests)
+│   ├── run.sh             # un comando: unit + e2e
+│   ├── unit/  lib/        # pruebas modulares (PHP puro)
+│   └── e2e/api.sh         # pruebas end-to-end (curl)
 ├── sql/                   # scripts de init por nodo (Etapa 2)
 │   ├── central/  norte/  sur/  este/
 ├── docs/                  # documento de arquitectura CAP (Etapa 10)

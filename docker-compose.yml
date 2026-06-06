@@ -119,6 +119,8 @@ services:
       - "8080:80"
     volumes:
       - ./src:/var/www/html
+      # Pruebas modulares: se ejecutan con el `php` del contenedor.
+      - ./tests:/var/www/tests:ro
     environment:
       # Puerto interno común a todas las instancias MariaDB
       DB_PORT: ${DB_PORT}
