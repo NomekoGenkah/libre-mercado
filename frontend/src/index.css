@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================================================================
+   Libre Mercado — sistema de diseño "consola técnica clara".
+   Paleta slate/gris + acento azul eléctrico. Esquinas rectas. Mono para datos.
+   Decoración geométrica de líneas finas (grillas, register marks, crosshairs).
+   =========================================================================== */
+
+@layer base {
+  :root {
+    --grid: rgba(21, 24, 29, 0.04);
+  }
+
+  * {
+    border-radius: 0 !important; /* sin bordes redondos en todo el sistema */
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans;
+    margin: 0;
+    /* Retícula técnica de fondo: cuadrícula fina sobre el papel. */
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  ::selection {
+    background: #1c44ff;
+    color: #fff;
+  }
+
+  /* Scrollbar técnico */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c2c8d2;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9aa3b1;
+    background-clip: padding-box;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply font-sans;
+  }
+}
+
+@layer components {
+  /* --- Etiqueta técnica en mayúsculas (kicker / encabezados de campo) --- */
+  .kicker {
+    @apply font-mono text-[11px] uppercase tracking-wider2 text-ink-faint;
+  }
+
+  /* --- Marco de panel con hairline + sombra técnica --- */
+  .panel {
+    @apply relative border border-line bg-surface;
+  }
+
+  /* --- Marca de registro en esquina (crosshair) --- */
+  .reg-mark::before,
+  .reg-mark::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+    opacity: 0.35;
+  }
+
+  /* --- Botón base --- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 border px-4 h-10
+           font-mono text-xs uppercase tracking-wider2 transition-colors
+           disabled:opacity-40 disabled:cursor-not-allowed select-none;
+  }
+  .btn-primary {
+    @apply btn bg-accent border-accent text-white hover:bg-accent-hover hover:border-accent-hover;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent border-line-strong text-ink hover:bg-ink hover:text-white;
+  }
+  .btn-quiet {
+    @apply btn bg-transparent border-line text-ink-muted hover:border-line-strong hover:text-ink;
+  }
+  .btn-danger {
+    @apply btn bg-transparent border-danger text-danger hover:bg-danger hover:text-white;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-[10px];
+  }
+
+  /* --- Campos de formulario --- */
+  .field-label {
+    @apply kicker block mb-1.5;
+  }
+  .input {
+    @apply w-full h-10 border border-line bg-paper px-3 font-mono text-sm text-ink
+           placeholder:text-ink-faint focus:outline-none focus:border-accent
+           focus:bg-surface transition-colors;
+  }
+  .input-invalid {
+    @apply border-danger bg-dangerSoft;
+  }
+
+  /* --- Badge / chip --- */
+  .chip {
+    @apply inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono
+           text-[10px] uppercase tracking-wider2;
+  }
+
+  /* --- Celdas de tabla --- */
+  .th {
+    @apply text-left font-mono text-[10px] uppercase tracking-wider2
+           text-ink-faint font-medium py-2.5 px-3 border-b border-line-strong whitespace-nowrap;
+  }
+  .td {
+    @apply py-2.5 px-3 text-sm border-b border-line-soft align-middle;
+  }
+}
+
+@layer utilities {
+  /* Hachura diagonal para estados vacíos / zonas "muertas" */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(21, 24, 29, 0.06),
+      rgba(21, 24, 29, 0.06) 1px,
+      transparent 1px,
+      transparent 8px
+    );
+  }
+  .hatch-accent {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(28, 68, 255, 0.12),
+      rgba(28, 68, 255, 0.12) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

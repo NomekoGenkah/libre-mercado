@@ -137,18 +137,23 @@
 > son probables end-to-end (login con `admin/admin123`). Los guards de rol
 > aplican: `admin` pasa siempre; `vendedor`/`bodeguero` según la ruta.
 
-### BLOQUE F — Frontend React (para la demo en vivo)
+### BLOQUE F — Frontend React (para la demo en vivo) ✅ COMPLETADO
 *No lo pide explícitamente la rúbrica, pero la "Defensa y Demo" lo necesita.*
 
-- [ ] **F1. Setup** — Vite + React 18 + Tailwind v3 + axios + react-router-dom
+- [x] **F1. Setup** — Vite + React 18 + Tailwind v3 + axios + react-router-dom
   en `frontend/`. `axios` con `withCredentials: true`.
-- [ ] **F2. Auth** — `AuthContext`, página de Login, rutas protegidas.
-- [ ] **F3. Páginas CRUD** — Productos, Clientes, Proveedores, (Usuarios).
-- [ ] **F4. Dashboard** — métricas generales.
-- [ ] **F5. Stock** — indicador verde/amarillo/rojo + alertas de stock bajo.
-- [ ] **F6. Ventas y Compras** — formularios + listados.
-- [ ] **F7. SimuladorCAP** ⭐ — timeline del fallo + estado de stock antes/después
+- [x] **F2. Auth** — `AuthContext`, página de Login, rutas protegidas (sesión + rol).
+- [x] **F3. Páginas CRUD** — Productos, Clientes, Proveedores, Usuarios.
+- [x] **F4. Dashboard** — métricas generales + topología de nodos en vivo (`/salud`).
+- [x] **F5. Stock** — indicador verde/amarillo/rojo + alertas + ajuste + movimientos.
+- [x] **F6. Ventas y Compras** — venta directa 2PC + reabastecimiento + listados.
+- [x] **F7. SimuladorCAP** ⭐ — timeline del fallo + estado de stock antes/durante/después
   (consume `/debug/simular-fallo`). Es la pantalla estrella de la defensa.
+
+> **Notas del Bloque F:** estética "consola técnica clara" (esquinas rectas,
+> tipografías Archivo/Public Sans/IBM Plex Mono, acento azul, decoración
+> geométrica). Flujo de ventas: **venta directa** (`POST /ventas`), sin pantallas
+> de carrito. Instrucciones de ejecución en `frontend/README.md`.
 
 ### BLOQUE G — Testing y cierre (Defensa y Demo)
 - [ ] **G1.** Levantar todo con `docker compose up -d` y verificar los 5 nodos.

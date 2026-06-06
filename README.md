@@ -39,7 +39,8 @@ El frontend React corre fuera de Docker en `localhost:5173` (Vite).
 - ✅ **Etapa 7** — Endpoint de simulación de fallo CAP (`/debug/simular-fallo`)
 - ✅ **Etapa 8** — Autenticación con sesiones PHP + roles
 - ✅ **Etapa 10** — Documento de arquitectura CAP ([`docs/arquitectura_CAP.md`](./docs/arquitectura_CAP.md))
-- ⬜ Etapa 9 (frontend React) y Etapa 11 (verificación final)
+- ✅ **Etapa 9** — Frontend React + Vite + Tailwind ([`frontend/`](./frontend/README.md))
+- ⬜ Etapa 11 (verificación final)
 
 ### Credenciales de demo (seed)
 

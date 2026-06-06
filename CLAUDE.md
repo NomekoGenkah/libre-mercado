@@ -19,7 +19,7 @@ versión orientada a personas.
 - ✅ **Etapa 6 — Transacciones ACID (Two-Phase Commit)** (COMPLETADA)
 - ✅ **Etapa 7 — Endpoint de simulación de fallo CAP** (COMPLETADA)
 - ✅ **Etapa 8 — Autenticación con sesiones PHP** (COMPLETADA, adelantada)
-- ⬜ Etapa 9 — Frontend React + Vite + Tailwind
+- ✅ **Etapa 9 — Frontend React + Vite + Tailwind** (`frontend/`) (COMPLETADA)
 - ✅ **Etapa 10 — Documento de arquitectura CAP** (`docs/arquitectura_CAP.md`) (COMPLETADA, adelantada con el Bloque D)
 - ⬜ Etapa 11 — Testing y verificación final
 
