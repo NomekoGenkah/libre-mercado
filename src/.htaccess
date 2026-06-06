@@ -1,0 +1,14 @@
+# ===========================================================================
+#  Libre Mercado — Front controller (Etapa 4 / Bloque A2)
+#  Redirige TODA petición que no sea un archivo/carpeta real a index.php,
+#  para que el Router de PHP resuelva las rutas de la API.
+# ===========================================================================
+RewriteEngine On
+
+# No reescribir archivos ni directorios existentes (assets, etc.).
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Todo lo demás -> index.php (el path original queda en REQUEST_URI).
+RewriteRule ^ index.php [QSA,L]

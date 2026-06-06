@@ -17,8 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
 # --- Configuración de Apache -----------------------------------------------
-#  Habilita rewrite para el front controller (index.php) del router.
-RUN a2enmod rewrite
+#  Habilita rewrite para el front controller (index.php) del router y permite
+#  que el .htaccess de /var/www/ tome efecto (por defecto AllowOverride None).
+RUN a2enmod rewrite \
+    && sed -ri 's!AllowOverride None!AllowOverride All!g' /etc/apache2/apache2.conf
 
 #  El DocumentRoot apunta a /var/www/html (montado desde ./src vía volume).
 ENV APACHE_DOCUMENT_ROOT=/var/www/html

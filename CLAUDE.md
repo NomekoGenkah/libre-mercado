@@ -13,8 +13,8 @@ versión orientada a personas.
 
 - ✅ **Etapa 1 — Infraestructura Docker** (COMPLETADA)
 - ✅ **Etapa 2 — Schemas SQL** (COMPLETADA)
-- ⬜ Etapa 3 — Capa de conexión PHP (`config/`)
-- ⬜ Etapa 4 — Router y estructura base PHP
+- ✅ **Etapa 3 — Capa de conexión PHP** (`config/`) (COMPLETADA)
+- ✅ **Etapa 4 — Router y estructura base PHP** (COMPLETADA)
 - ⬜ Etapa 5 — Controllers CRUD
 - ⬜ Etapa 6 — Transacciones ACID (Two-Phase Commit)
 - ⬜ Etapa 7 — Endpoint de simulación de fallo CAP
