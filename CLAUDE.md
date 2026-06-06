@@ -16,7 +16,7 @@ versión orientada a personas.
 - ✅ **Etapa 3 — Capa de conexión PHP** (`config/`) (COMPLETADA)
 - ✅ **Etapa 4 — Router y estructura base PHP** (COMPLETADA)
 - ✅ **Etapa 5 — Controllers CRUD** (COMPLETADA)
-- ⬜ Etapa 6 — Transacciones ACID (Two-Phase Commit)
+- ✅ **Etapa 6 — Transacciones ACID (Two-Phase Commit)** (COMPLETADA)
 - ⬜ Etapa 7 — Endpoint de simulación de fallo CAP
 - ✅ **Etapa 8 — Autenticación con sesiones PHP** (COMPLETADA, adelantada)
 - ⬜ Etapa 9 — Frontend React + Vite + Tailwind

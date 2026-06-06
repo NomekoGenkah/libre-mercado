@@ -34,9 +34,10 @@ El frontend React corre fuera de Docker en `localhost:5173` (Vite).
 - ✅ **Etapa 4** — Router y estructura base (front controller)
 - ✅ **Etapa 5** — Controllers CRUD (productos, clientes, usuarios,
   proveedores, sucursales, stock, carrito)
+- ✅ **Etapa 6** — Transacciones ACID: venta distribuida (Two-Phase Commit) y
+  reabastecimiento (transacción local)
 - ✅ **Etapa 8** — Autenticación con sesiones PHP + roles
-- ⬜ Etapas 6, 7, 9, 10 (transacciones ACID, simulación CAP, frontend,
-  documento CAP)
+- ⬜ Etapas 7, 9, 10 (simulación CAP, frontend, documento CAP)
 
 ### Credenciales de demo (seed)
 

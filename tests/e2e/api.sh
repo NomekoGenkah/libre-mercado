@@ -92,6 +92,44 @@ req GET /stock/1
 check "stock de sucursal 1 -> 200" 200 "$HTTP"
 contiene "incluye campo estado (semáforo)" '"estado"'
 
+# Lee la cantidad de stock de un producto en la sucursal 1 desde $BODY.
+# Tolera que PDO serialice los enteros con o sin comillas ("50" o 50).
+stock_de() {
+    printf '%s' "$BODY" \
+        | grep -o "\"id_prod\":\"\\?$1\"\\?,\"id_suc\":\"\\?1\"\\?,\"cantidad\":\"\\?[0-9]*" \
+        | grep -o '[0-9]*$'
+}
+
+echo "== Venta (transacción distribuida ACID / 2PC) =="
+req GET /stock/1; ANTES=$(stock_de 1)
+req POST /ventas '{"id_cli":1,"id_suc":1,"items":[{"id_prod":1,"cantidad":2}]}'
+check "venta válida -> 201" 201 "$HTTP"
+req GET /stock/1; DESPUES=$(stock_de 1)
+check "stock bajó exactamente 2 (descuento atómico)" "$((ANTES - 2))" "$DESPUES"
+
+req POST /ventas '{"id_cli":1,"id_suc":1,"items":[{"id_prod":1,"cantidad":99999999}]}'
+check "sobreventa -> 409 (sin abrir transacción)" 409 "$HTTP"
+req GET /stock/1
+check "tras el 409 el stock NO cambió (CP: no se sobrevende)" "$DESPUES" "$(stock_de 1)"
+
+req POST /ventas '{"id_cli":1,"id_suc":1,"items":[]}'
+check "venta sin items -> 400" 400 "$HTTP"
+req POST /ventas '{"id_cli":999999,"id_suc":1,"items":[{"id_prod":1,"cantidad":1}]}'
+check "venta con cliente inexistente -> 404" 404 "$HTTP"
+
+req GET /ventas
+check "listar ventas -> 200" 200 "$HTTP"
+req GET /movimientos/1
+contiene "movimientos incluye tipo 'venta'" '"venta"'
+
+echo "== Compra (reabastecimiento, transacción local ACID) =="
+req POST /compras '{"id_prov":1,"id_suc":1,"items":[{"id_prod":1,"cantidad":5,"precio_unitario":20000}]}'
+check "reabastecimiento -> 201" 201 "$HTTP"
+req GET /stock/1
+check "stock subió exactamente 5" "$((DESPUES + 5))" "$(stock_de 1)"
+req GET /compras
+check "listar compras -> 200" 200 "$HTTP"
+
 echo "== Roles (403) =="
 req POST /auth/login '{"username":"vendedor","password":"vendedor123"}'
 check "login vendedor -> 200" 200 "$HTTP"

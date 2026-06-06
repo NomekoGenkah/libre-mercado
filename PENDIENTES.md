@@ -85,10 +85,10 @@
 > - ⚠️ **Pendiente para probar B end-to-end:** las rutas exigen sesión, así que
 >   hace falta el **Bloque E (login)** o desactivar temporalmente el middleware.
 
-### BLOQUE C — Transacciones ACID (Requisito 2) ⭐ CRÍTICO PARA LA NOTA
+### BLOQUE C — Transacciones ACID (Requisito 2) ✅ COMPLETADO ⭐ CRÍTICO PARA LA NOTA
 *Es el corazón distribuido del proyecto. Es lo más valorado en la rúbrica.*
 
-- [ ] **C1. VentaController::procesarVenta()** — Two-Phase Commit:
+- [x] **C1. VentaController::procesarVenta()** — Two-Phase Commit:
   - Conexión a central + sucursal.
   - Validar producto activo (central) y stock suficiente (sucursal).
   - `BEGIN` en ambos nodos.
@@ -97,10 +97,20 @@
   - Verificar que el UPDATE afectó exactamente 1 fila.
   - COMMIT en ambos; si algo falla → **ROLLBACK en ambos**.
   - Errores: stock insuficiente → 409; nodo caído → 503 + rollback; cantidad ≤ 0 → 400.
-- [ ] **C2. CompraController::procesarReabastecimiento()** — transacción distribuida:
-  registra compra (central) + aumenta stock (sucursal) + `movimientos_stock`
-  tipo `'reabastecimiento'`.
-- [ ] **C3. Endpoints GET de ventas/compras/movimientos** (`/ventas`, `/compras`, `/movimientos/:id_suc`).
+- [x] **C2. CompraController::procesarReabastecimiento()** — transacción ACID
+  **local** (compras/stock/movimientos viven todas en el nodo de sucursal):
+  registra compra + aumenta stock (upsert) + `movimientos_stock`
+  tipo `'reabastecimiento'`. Valida proveedor/productos activos en central.
+- [x] **C3. Endpoints GET de ventas/compras/movimientos** (`/ventas`, `/ventas/:id`,
+  `/compras`, `/movimientos/:id_suc`).
+
+> **Aclaración C1 vs C2:** la **venta** es la transacción **distribuida** real
+> (escribe `ventas` en central + `stock` en sucursal → 2PC con central como
+> coordinador). El **reabastecimiento** resultó ser **local** porque el schema
+> ubica `compras` en el nodo de sucursal (la línea original de C2 decía
+> "compra (central)", pero el modelo de datos manda → es local).
+> La cobertura e2e (`tests/e2e/api.sh`) verifica: descuento atómico de stock,
+> sobreventa → 409 sin alterar stock, y reabastecimiento que sube el stock.
 
 ### BLOQUE D — Teorema CAP (Requisito 3) ⭐ CLAVE EN LA DEFENSA
 - [ ] **D1. DebugController — `POST /debug/simular-fallo`**
