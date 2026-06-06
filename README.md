@@ -36,8 +36,10 @@ El frontend React corre fuera de Docker en `localhost:5173` (Vite).
   proveedores, sucursales, stock, carrito)
 - ✅ **Etapa 6** — Transacciones ACID: venta distribuida (Two-Phase Commit) y
   reabastecimiento (transacción local)
+- ✅ **Etapa 7** — Endpoint de simulación de fallo CAP (`/debug/simular-fallo`)
 - ✅ **Etapa 8** — Autenticación con sesiones PHP + roles
-- ⬜ Etapas 7, 9, 10 (simulación CAP, frontend, documento CAP)
+- ✅ **Etapa 10** — Documento de arquitectura CAP ([`docs/arquitectura_CAP.md`](./docs/arquitectura_CAP.md))
+- ⬜ Etapa 9 (frontend React) y Etapa 11 (verificación final)
 
 ### Credenciales de demo (seed)
 
@@ -165,5 +167,17 @@ En e-commerce la **sobreventa es inaceptable**. Si un nodo de sucursal no
 responde durante una venta, la transacción distribuida completa hace rollback:
 el sistema queda temporalmente indisponible para esa sucursal, pero el
 inventario nunca queda inconsistente. La disponibilidad se sacrifica de forma
-deliberada. La justificación detallada y la evidencia en código se entregan en
-`docs/arquitectura_CAP.md` (Etapa 10).
+deliberada. La justificación detallada y la evidencia en código están en
+[`docs/arquitectura_CAP.md`](./docs/arquitectura_CAP.md).
+
+Se puede **ver en vivo** con el endpoint de simulación (requiere sesión admin):
+
+```bash
+curl -b cookies.txt -X POST http://localhost:8080/debug/simular-fallo \
+  -H 'Content-Type: application/json' -d '{"id_suc":1,"items":[{"id_prod":1,"cantidad":2}]}'
+```
+
+Lanza una venta, falla a propósito **después** de descontar el stock y **antes**
+del `COMMIT`, hace rollback en ambos nodos y responde con el stock
+`antes/durante/después`: el stock vuelve a su valor original y la venta no se
+registra (`consistencia_preservada: true`).

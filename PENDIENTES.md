@@ -112,17 +112,19 @@
 > La cobertura e2e (`tests/e2e/api.sh`) verifica: descuento atómico de stock,
 > sobreventa → 409 sin alterar stock, y reabastecimiento que sube el stock.
 
-### BLOQUE D — Teorema CAP (Requisito 3) ⭐ CLAVE EN LA DEFENSA
-- [ ] **D1. DebugController — `POST /debug/simular-fallo`**
+### BLOQUE D — Teorema CAP (Requisito 3) ✅ COMPLETADO ⭐ CLAVE EN LA DEFENSA
+- [x] **D1. DebugController — `POST /debug/simular-fallo`**
   - Ejecuta los pasos de la venta, lanza excepción **después** del UPDATE de
     stock y **antes** del COMMIT, hace rollback en ambos nodos.
-  - Devuelve JSON explicativo: operaciones ejecutadas, punto de fallo,
-    rollbacks, stock sin cambios y explicación del comportamiento **CP**.
-- [ ] **D2. `docs/arquitectura_CAP.md`** (máx. 2 páginas) — **ENTREGABLE**:
-  descripción del sistema, teorema CAP en e-commerce, justificación de la
-  elección **CP** (consistencia sobre disponibilidad → evitar sobreventa),
-  comportamiento ante partición, trade-off y evidencia en código
-  (`procesarVenta()` y `/debug/simular-fallo`).
+  - Devuelve JSON explicativo: `timeline`, punto de fallo, rollbacks,
+    stock **antes/durante/después**, `venta_persistida:false`,
+    `consistencia_preservada:true` y explicación del comportamiento **CP**.
+- [x] **D2. `docs/arquitectura_CAP.md`** — **ENTREGABLE**: descripción del
+  sistema, teorema CAP en e-commerce, justificación **CP**, comportamiento
+  ante partición, trade-off y evidencia en código + comandos de demo.
+
+> **Nota:** la simulación está cubierta en `tests/e2e/api.sh` (verifica
+> `consistencia_preservada:true` y que el stock quede intacto tras el rollback).
 
 ### BLOQUE E — Autenticación (apoya CRUD y demo) ✅ COMPLETADO
 - [x] **E1. AuthController** — `login()`, `logout()`, `me()` con sesiones PHP.
@@ -151,8 +153,8 @@
 ### BLOQUE G — Testing y cierre (Defensa y Demo)
 - [ ] **G1.** Levantar todo con `docker compose up -d` y verificar los 5 nodos.
 - [x] **G2.** Probar cada CRUD end-to-end (crear/leer/editar/borrar lógico). *(cubierto por `tests/e2e/api.sh`)*
-- [ ] **G3.** Probar una venta completa y confirmar que el stock baja atómicamente. *(pendiente Bloque C)*
-- [ ] **G4.** Probar `/debug/simular-fallo` y confirmar que el stock NO cambia (rollback). *(pendiente Bloque D)*
+- [x] **G3.** Probar una venta completa y confirmar que el stock baja atómicamente. *(cubierto por `tests/e2e/api.sh`)*
+- [x] **G4.** Probar `/debug/simular-fallo` y confirmar que el stock NO cambia (rollback). *(cubierto por `tests/e2e/api.sh`)*
 - [x] **G5.** Probar login/roles (admin/vendedor/bodeguero). *(cubierto por `tests/e2e/api.sh`)*
 - [x] **G6.** Actualizar `README.md` con instrucciones de ejecución y pruebas.
 - [ ] **G7.** Ensayar la defensa: explicar arquitectura distribuida + por qué CP.

@@ -17,10 +17,10 @@ versión orientada a personas.
 - ✅ **Etapa 4 — Router y estructura base PHP** (COMPLETADA)
 - ✅ **Etapa 5 — Controllers CRUD** (COMPLETADA)
 - ✅ **Etapa 6 — Transacciones ACID (Two-Phase Commit)** (COMPLETADA)
-- ⬜ Etapa 7 — Endpoint de simulación de fallo CAP
+- ✅ **Etapa 7 — Endpoint de simulación de fallo CAP** (COMPLETADA)
 - ✅ **Etapa 8 — Autenticación con sesiones PHP** (COMPLETADA, adelantada)
 - ⬜ Etapa 9 — Frontend React + Vite + Tailwind
-- ⬜ Etapa 10 — Documento de arquitectura CAP (`docs/arquitectura_CAP.md`)
+- ✅ **Etapa 10 — Documento de arquitectura CAP** (`docs/arquitectura_CAP.md`) (COMPLETADA, adelantada con el Bloque D)
 - ⬜ Etapa 11 — Testing y verificación final
 
 Completar cada etapa y confirmar que funciona antes de avanzar a la siguiente.

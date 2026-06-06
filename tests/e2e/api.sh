@@ -130,6 +130,15 @@ check "stock subió exactamente 5" "$((DESPUES + 5))" "$(stock_de 1)"
 req GET /compras
 check "listar compras -> 200" 200 "$HTTP"
 
+echo "== Simulación de fallo CAP (/debug/simular-fallo) =="
+req GET /stock/1; CAP_ANTES=$(stock_de 1)
+req POST /debug/simular-fallo '{"id_suc":1,"items":[{"id_prod":1,"cantidad":2}]}'
+check "simular-fallo -> 200" 200 "$HTTP"
+contiene "reporta consistencia_preservada:true" '"consistencia_preservada":true'
+contiene "reporta venta_persistida:false (central revirtió)" '"venta_persistida":false'
+req GET /stock/1
+check "stock intacto tras la simulación (rollback CP)" "$CAP_ANTES" "$(stock_de 1)"
+
 echo "== Roles (403) =="
 req POST /auth/login '{"username":"vendedor","password":"vendedor123"}'
 check "login vendedor -> 200" 200 "$HTTP"
