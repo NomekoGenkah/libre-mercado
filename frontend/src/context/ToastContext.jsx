@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useState } from 'react'
+import { Icon } from '../components/ui/icons'
 
 // ===========================================================================
-//  Toasts técnicos (esquina inferior derecha). API: toast.ok / .error / .info.
+//  Toasts (esquina inferior derecha). API: toast.ok / .error / .info.
 // ===========================================================================
 
 const ToastContext = createContext(null)
@@ -43,29 +44,26 @@ export function ToastProvider({ children }) {
 }
 
 const ESTILOS = {
-  ok: { borde: 'border-ok', etq: 'OK', color: 'text-ok' },
-  error: { borde: 'border-danger', etq: 'ERR', color: 'text-danger' },
-  info: { borde: 'border-accent', etq: 'LOG', color: 'text-accent' },
+  ok: { icono: 'check', tint: 'bg-ok/15 text-ok' },
+  error: { icono: 'alert', tint: 'bg-danger/15 text-danger' },
+  info: { icono: 'bolt', tint: 'bg-accent/15 text-accent' },
 }
 
 function ToastItem({ tipo, mensaje, onClose }) {
   const s = ESTILOS[tipo] || ESTILOS.info
   return (
-    <div
-      className={`panel ${s.borde} border-l-[3px] bg-surface px-3.5 py-3 shadow-lift animate-riseIn`}
-      role="status"
-    >
-      <div className="flex items-start gap-3">
-        <span className={`mt-0.5 font-mono text-[10px] tracking-wider2 ${s.color}`}>{s.etq}</span>
-        <p className="flex-1 text-sm leading-snug text-ink-soft">{mensaje}</p>
-        <button
-          onClick={onClose}
-          className="font-mono text-xs text-ink-faint hover:text-ink"
-          aria-label="Cerrar"
-        >
-          ✕
-        </button>
-      </div>
+    <div className="panel flex items-start gap-3 bg-surface px-4 py-3 shadow-lift animate-riseIn" role="status">
+      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${s.tint}`}>
+        <Icon name={s.icono} className="h-4 w-4" />
+      </span>
+      <p className="flex-1 pt-0.5 text-sm leading-snug text-ink-soft">{mensaje}</p>
+      <button
+        onClick={onClose}
+        className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-faint transition-colors hover:bg-surface2 hover:text-ink"
+        aria-label="Cerrar"
+      >
+        <Icon name="close" className="h-3.5 w-3.5" />
+      </button>
     </div>
   )
 }

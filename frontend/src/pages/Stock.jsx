@@ -9,6 +9,7 @@ import { DataTable } from '../components/ui/DataTable'
 import { Modal } from '../components/ui/Modal'
 import { Field, TextInput } from '../components/ui/Field'
 import { SucursalTabs } from '../components/ui/SucursalTabs'
+import { Icon } from '../components/ui/icons'
 import { dinero, numero, fechaHora, folio, nombreNodo } from '../lib/format'
 
 const TIPO_MOV = {
@@ -109,7 +110,7 @@ export default function Stock() {
   return (
     <>
       <PageHeader
-        codigo="OPS · 02"
+        codigo="Operación"
         titulo="Inventario"
         descripcion="Stock por sucursal (nodo local). Semáforo: rojo ≤ mínimo, amarillo cerca del mínimo, verde por encima."
       >
@@ -137,10 +138,11 @@ export default function Stock() {
               Movimientos
             </TabMini>
             <button
-              className="btn-quiet btn-sm ml-1"
+              className="btn-quiet btn-sm ml-1 w-8 px-0"
               onClick={() => (vista === 'stock' ? refrescar() : refrescarMovs())}
+              title="Refrescar"
             >
-              ↻
+              <Icon name="refresh" className="h-4 w-4" />
             </button>
           </div>
         }

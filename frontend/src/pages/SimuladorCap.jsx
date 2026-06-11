@@ -3,10 +3,11 @@ import { api } from '../api/client'
 import { useToast } from '../context/ToastContext'
 import { useFetch } from '../hooks/useFetch'
 import { PageHeader } from '../components/layout/AppLayout'
-import { Panel, Chip, Kicker, Spinner, CornerMarks } from '../components/ui/primitives'
+import { Panel, Chip, Kicker, Spinner } from '../components/ui/primitives'
 import { Field, Select } from '../components/ui/Field'
 import { NodeDiagram } from '../components/ui/NodeDiagram'
 import { SucursalTabs } from '../components/ui/SucursalTabs'
+import { Icon } from '../components/ui/icons'
 import { numero, nombreNodo } from '../lib/format'
 
 export default function SimuladorCap() {
@@ -80,7 +81,7 @@ export default function SimuladorCap() {
   return (
     <>
       <PageHeader
-        codigo="CAP · ⊘"
+        codigo="Tolerancia a fallos"
         titulo="Simulador de fallo distribuido"
         descripcion="Reproduce una venta que falla justo DESPUÉS de descontar el stock y ANTES del COMMIT. Demuestra el comportamiento CP: rollback total en ambos nodos, sin sobreventa. Nada se persiste."
       />
@@ -126,7 +127,7 @@ export default function SimuladorCap() {
               </div>
 
               <button className="btn-primary w-full" onClick={ejecutar} disabled={corriendo}>
-                {corriendo ? <Spinner size={14} className="border-white/40 border-t-white" /> : '⊘'}
+                {corriendo ? <Spinner size={14} /> : <Icon name="bolt" className="h-4 w-4" />}
                 {corriendo ? 'Ejecutando…' : 'Ejecutar simulación'}
               </button>
               <p className="text-xs leading-relaxed text-ink-faint">
@@ -179,8 +180,10 @@ export default function SimuladorCap() {
 function Reposo() {
   return (
     <Panel bodyClassName="p-0">
-      <div className="hatch-accent flex flex-col items-center justify-center gap-4 border-b border-line py-20 text-center">
-        <div className="font-mono text-5xl text-accent">⊘</div>
+      <div className="flex flex-col items-center justify-center gap-4 border-b border-line py-20 text-center">
+        <span className="grid h-16 w-16 place-items-center rounded-2xl bg-accent/12 text-accent">
+          <Icon name="simulador" className="h-8 w-8" />
+        </span>
         <div>
           <p className="font-display text-lg font-700 text-ink">Simulación en espera</p>
           <p className="mt-1 max-w-sm text-sm text-ink-muted">
@@ -221,8 +224,7 @@ function EnEjecucion({ nodo }) {
 function Veredicto({ r }) {
   const ok = r.consistencia_preservada
   return (
-    <div className={`panel relative overflow-hidden border-l-[4px] ${ok ? 'border-ok' : 'border-danger'} bg-surface p-6 shadow-frame animate-riseIn`}>
-      <CornerMarks className={ok ? 'text-ok' : 'text-danger'} />
+    <div className={`panel relative overflow-hidden border-l-[4px] ${ok ? 'border-l-ok' : 'border-l-danger'} bg-surface p-6 shadow-frame animate-riseIn`}>
       <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
         <div>
           <Kicker>Resultado</Kicker>
@@ -357,8 +359,8 @@ function Explicacion({ r }) {
 function Letra({ l, activo }) {
   return (
     <div
-      className={`flex h-12 w-12 items-center justify-center border-2 font-display text-2xl font-800 ${
-        activo ? 'border-accent bg-accent text-white' : 'border-line text-line'
+      className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 font-display text-2xl font-800 ${
+        activo ? 'border-accent bg-accent text-white' : 'border-line text-ink-faint'
       }`}
     >
       {l}

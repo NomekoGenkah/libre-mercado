@@ -1,5 +1,5 @@
-// Selector de sucursal (norte=1, sur=2, este=3). Pestañas rectas con el id_suc
-// en mono. Reutilizado por Inventario y Reabastecimiento.
+// Selector de sucursal (norte=1, sur=2, este=3). Reutilizado por Inventario,
+// Reabastecimiento, Ventas y el Simulador CAP.
 const SUCS = [
   { id: 1, nombre: 'Norte', puerto: ':3307' },
   { id: 2, nombre: 'Sur', puerto: ':3308' },
@@ -8,22 +8,22 @@ const SUCS = [
 
 export function SucursalTabs({ value, onChange }) {
   return (
-    <div className="flex border border-line-strong">
-      {SUCS.map((s, i) => {
+    <div className="inline-flex rounded-lg border border-line bg-paper p-1">
+      {SUCS.map((s) => {
         const activo = value === s.id
         return (
           <button
             key={s.id}
             onClick={() => onChange(s.id)}
-            className={`group flex items-center gap-2 px-4 py-2.5 transition-colors ${
-              i > 0 ? 'border-l border-line-strong' : ''
-            } ${activo ? 'bg-ink text-white' : 'bg-surface text-ink-muted hover:bg-paper hover:text-ink'}`}
+            className={`flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-600 transition-all ${
+              activo
+                ? 'bg-accent text-white shadow-[0_4px_14px_-6px_rgba(124,92,252,0.8)]'
+                : 'text-ink-muted hover:bg-surface2 hover:text-ink'
+            }`}
           >
-            <span className={`h-1.5 w-1.5 ${activo ? 'bg-accent' : 'bg-line'}`} />
-            <span className="font-display text-sm font-700 tracking-tight">{s.nombre}</span>
-            <span className={`font-mono text-[9px] ${activo ? 'text-white/50' : 'text-ink-faint'}`}>
-              {s.puerto}
-            </span>
+            <span className={`h-1.5 w-1.5 rounded-full ${activo ? 'bg-white' : 'bg-ink-faint'}`} />
+            {s.nombre}
+            <span className={`font-mono text-[10px] ${activo ? 'text-white/60' : 'text-ink-faint'}`}>{s.puerto}</span>
           </button>
         )
       })}

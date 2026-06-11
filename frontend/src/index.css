@@ -3,157 +3,262 @@
 @tailwind utilities;
 
 /* ===========================================================================
-   Libre Mercado — sistema de diseño "consola técnica clara".
-   Paleta slate/gris + acento azul eléctrico. Esquinas rectas. Mono para datos.
-   Decoración geométrica de líneas finas (grillas, register marks, crosshairs).
+   Libre Mercado — sistema de diseño con soporte claro / oscuro.
+   Modo oscuro: predeterminado (grafito + violeta).
+   Modo claro:  añadir clase "light" a <html> (slate + esmeralda).
+   Tokens de color como canales RGB para que las variantes de opacidad
+   de Tailwind (/60, /12, etc.) funcionen correctamente.
    =========================================================================== */
 
+/* ── Tokens oscuros (predeterminado) ── */
+:root {
+  /* Superficies */
+  --color-base:         10 11 16;
+  --color-paper:        14 16 22;
+  --color-surface:      20 22 31;
+  --color-surface2:     27 30 42;
+
+  /* Texto */
+  --color-ink:          236 238 244;
+  --color-ink-soft:     198 202 214;
+  --color-ink-muted:    139 146 164;
+  --color-ink-faint:    91 98 115;
+
+  /* Bordes */
+  --color-line:         38 42 55;
+  --color-line-soft:    28 32 41;
+  --color-line-strong:  58 64 83;
+
+  /* Acento violeta */
+  --color-accent:       124 92 252;
+  --color-accent-hover: 146 119 255;
+  --color-accent-soft:  26 23 51;
+
+  /* Semánticos */
+  --color-ok:           52 211 153;
+  --color-ok-soft:      15 42 33;
+  --color-warn:         251 191 36;
+  --color-warn-soft:    42 35 16;
+  --color-danger:       248 113 113;
+  --color-danger-soft:  44 22 25;
+
+  /* Efectos */
+  --body-bg:            #0a0b10;
+  --body-glow-1:        rgba(124, 92, 252, 0.12);
+  --body-glow-2:        rgba(60, 110, 255, 0.07);
+  --glass-bg:           rgba(16, 18, 26, 0.72);
+  --shadow-frame:       0 1px 0 0 rgba(255,255,255,0.03) inset, 0 16px 40px -28px rgba(0,0,0,0.8);
+  --shadow-lift:        0 24px 60px -24px rgba(0,0,0,0.85);
+  --shadow-glow:        0 0 0 1px rgba(124,92,252,0.35), 0 12px 40px -12px rgba(124,92,252,0.45);
+  --ring-glow:          0 0 0 1px rgba(124,92,252,0.4), 0 8px 30px -10px rgba(124,92,252,0.5);
+  --btn-primary-shadow: 0 6px 20px -8px rgba(124,92,252,0.7);
+  --btn-primary-shadow-hover: 0 10px 28px -8px rgba(124,92,252,0.85);
+  --dot-accent-glow:    0 0 8px 2px rgba(124, 92, 252, 0.6);
+  --text-gradient:      linear-gradient(100deg, #eceef4 0%, #b9a6ff 55%, #7c5cfc 100%);
+  --autofill-text:      #eceef4;
+  --autofill-bg:        0 0 0 1000px #0e1016 inset;
+  --scrollbar-thumb:    #2a2f3d;
+  --scrollbar-thumb-hover: #3a4153;
+  --color-scheme:       dark;
+}
+
+/* ── Tokens claros ── */
+html.light {
+  /* Superficies slate */
+  --color-base:         248 250 252;   /* slate-50  */
+  --color-paper:        241 245 249;   /* slate-100 */
+  --color-surface:      255 255 255;   /* white     */
+  --color-surface2:     241 245 249;   /* slate-100 */
+
+  /* Texto */
+  --color-ink:          15 23 42;      /* slate-900 */
+  --color-ink-soft:     51 65 85;      /* slate-700 */
+  --color-ink-muted:    100 116 139;   /* slate-500 */
+  --color-ink-faint:    148 163 184;   /* slate-400 */
+
+  /* Bordes */
+  --color-line:         226 232 240;   /* slate-200 */
+  --color-line-soft:    241 245 249;   /* slate-100 */
+  --color-line-strong:  203 213 225;   /* slate-300 */
+
+  /* Acento esmeralda */
+  --color-accent:       16 185 129;    /* emerald-500 */
+  --color-accent-hover: 5 150 105;     /* emerald-600 */
+  --color-accent-soft:  209 250 229;   /* emerald-100 */
+
+  /* Semánticos */
+  --color-ok:           16 185 129;    /* emerald-500 */
+  --color-ok-soft:      209 250 229;   /* emerald-100 */
+  --color-warn:         245 158 11;    /* amber-500  */
+  --color-warn-soft:    254 243 199;   /* amber-100  */
+  --color-danger:       239 68 68;     /* red-500    */
+  --color-danger-soft:  254 226 226;   /* red-100    */
+
+  /* Efectos */
+  --body-bg:            #f8fafc;
+  --body-glow-1:        rgba(16, 185, 129, 0.07);
+  --body-glow-2:        rgba(5, 150, 105, 0.05);
+  --glass-bg:           rgba(255, 255, 255, 0.88);
+  --shadow-frame:       0 1px 0 0 rgba(0,0,0,0.04) inset, 0 16px 40px -28px rgba(0,0,0,0.08);
+  --shadow-lift:        0 24px 60px -24px rgba(0,0,0,0.12);
+  --shadow-glow:        0 0 0 1px rgba(16,185,129,0.3), 0 12px 40px -12px rgba(16,185,129,0.3);
+  --ring-glow:          0 0 0 1px rgba(16,185,129,0.4), 0 8px 30px -10px rgba(16,185,129,0.3);
+  --btn-primary-shadow: 0 6px 20px -8px rgba(16,185,129,0.5);
+  --btn-primary-shadow-hover: 0 10px 28px -8px rgba(16,185,129,0.65);
+  --dot-accent-glow:    0 0 8px 2px rgba(16, 185, 129, 0.5);
+  --text-gradient:      linear-gradient(100deg, #0f172a 0%, #059669 55%, #10b981 100%);
+  --autofill-text:      #0f172a;
+  --autofill-bg:        0 0 0 1000px #f1f5f9 inset;
+  --scrollbar-thumb:    #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+  --color-scheme:       light;
+}
+
+/* ── Overrides para el SVG de fondo de Login ── */
+html.light .network-bg-svg line {
+  stroke: rgb(var(--color-accent) / 0.22);
+}
+html.light .network-bg-svg circle {
+  fill: rgb(var(--color-accent) / 0.6);
+}
+
 @layer base {
-  :root {
-    --grid: rgba(21, 24, 29, 0.04);
-  }
-
-  * {
-    border-radius: 0 !important; /* sin bordes redondos en todo el sistema */
-  }
-
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    color-scheme: var(--color-scheme);
   }
 
   body {
-    @apply bg-paper text-ink font-sans;
+    @apply bg-base text-ink font-sans antialiased;
     margin: 0;
-    /* Retícula técnica de fondo: cuadrícula fina sobre el papel. */
+    min-height: 100vh;
+    background-color: var(--body-bg);
     background-image:
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 28px 28px;
+      radial-gradient(900px 500px at 12% -10%, var(--body-glow-1), transparent 60%),
+      radial-gradient(800px 600px at 100% 0%,  var(--body-glow-2), transparent 55%);
+    background-attachment: fixed;
   }
 
   ::selection {
-    background: #1c44ff;
-    color: #fff;
+    background: rgb(var(--color-accent) / 0.3);
+    color: rgb(var(--color-surface));
   }
 
-  /* Scrollbar técnico */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: #c2c8d2;
-    border: 2px solid transparent;
+    background: var(--scrollbar-thumb);
+    border: 3px solid transparent;
     background-clip: padding-box;
+    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #9aa3b1;
+    background: var(--scrollbar-thumb-hover);
     background-clip: padding-box;
   }
 
-  input,
-  select,
-  textarea {
-    @apply font-sans;
+  input, select, textarea { @apply font-sans; }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--autofill-text);
+    -webkit-box-shadow: var(--autofill-bg);
+    caret-color: var(--autofill-text);
   }
 }
 
 @layer components {
-  /* --- Etiqueta técnica en mayúsculas (kicker / encabezados de campo) --- */
+  /* Eyebrow */
   .kicker {
-    @apply font-mono text-[11px] uppercase tracking-wider2 text-ink-faint;
+    @apply text-[11px] font-600 uppercase tracking-wider2 text-ink-faint;
   }
 
-  /* --- Marco de panel con hairline + sombra técnica --- */
+  /* Tarjeta / panel — esquinas cuadradas (4 px) */
   .panel {
-    @apply relative border border-line bg-surface;
+    @apply relative rounded border border-line bg-surface;
   }
 
-  /* --- Marca de registro en esquina (crosshair) --- */
-  .reg-mark::before,
-  .reg-mark::after {
-    content: '';
-    position: absolute;
-    background: currentColor;
-    opacity: 0.35;
-  }
-
-  /* --- Botón base --- */
+  /* Botones — esquinas cuadradas */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 border px-4 h-10
-           font-mono text-xs uppercase tracking-wider2 transition-colors
+    @apply inline-flex items-center justify-center gap-2 rounded border px-4 h-10
+           text-sm font-600 transition-all duration-150
            disabled:opacity-40 disabled:cursor-not-allowed select-none;
   }
   .btn-primary {
-    @apply btn bg-accent border-accent text-white hover:bg-accent-hover hover:border-accent-hover;
+    @apply btn border-transparent text-white bg-accent hover:bg-accent-hover;
+    box-shadow: var(--btn-primary-shadow);
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: var(--btn-primary-shadow-hover);
   }
   .btn-ghost {
-    @apply btn bg-transparent border-line-strong text-ink hover:bg-ink hover:text-white;
+    @apply btn border-line-strong bg-transparent text-ink-soft hover:bg-surface2 hover:text-ink hover:border-line-strong;
   }
   .btn-quiet {
-    @apply btn bg-transparent border-line text-ink-muted hover:border-line-strong hover:text-ink;
+    @apply btn border-line bg-surface2/60 text-ink-muted hover:bg-surface2 hover:text-ink;
   }
   .btn-danger {
-    @apply btn bg-transparent border-danger text-danger hover:bg-danger hover:text-white;
+    @apply btn border-danger/40 bg-danger/10 text-danger hover:bg-danger hover:text-white hover:border-danger;
   }
   .btn-sm {
-    @apply h-8 px-3 text-[10px];
+    @apply h-8 px-3 text-[12px] rounded;
   }
 
-  /* --- Campos de formulario --- */
+  /* Campos */
   .field-label {
-    @apply kicker block mb-1.5;
+    @apply block mb-1.5 text-[12px] font-600 text-ink-soft;
   }
   .input {
-    @apply w-full h-10 border border-line bg-paper px-3 font-mono text-sm text-ink
-           placeholder:text-ink-faint focus:outline-none focus:border-accent
-           focus:bg-surface transition-colors;
+    @apply w-full h-10 rounded border border-line bg-paper px-3 text-sm text-ink
+           placeholder:text-ink-faint transition-colors
+           focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/25;
   }
   .input-invalid {
-    @apply border-danger bg-dangerSoft;
+    @apply border-danger/60 focus:border-danger focus:ring-danger/25;
   }
 
-  /* --- Badge / chip --- */
+  /* Chip / badge — esquinas mínimas (2 px) */
   .chip {
-    @apply inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono
-           text-[10px] uppercase tracking-wider2;
+    @apply inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-0.5
+           text-[11px] font-600 leading-5;
   }
 
-  /* --- Celdas de tabla --- */
+  /* Tabla */
   .th {
-    @apply text-left font-mono text-[10px] uppercase tracking-wider2
-           text-ink-faint font-medium py-2.5 px-3 border-b border-line-strong whitespace-nowrap;
+    @apply text-left text-[11px] uppercase tracking-wider2
+           text-ink-faint font-600 py-3 px-4 border-b border-line whitespace-nowrap;
   }
   .td {
-    @apply py-2.5 px-3 text-sm border-b border-line-soft align-middle;
+    @apply py-3 px-4 text-sm border-b border-line-soft align-middle text-ink-soft;
   }
 }
 
 @layer utilities {
-  /* Hachura diagonal para estados vacíos / zonas "muertas" */
-  .hatch {
-    background-image: repeating-linear-gradient(
-      45deg,
-      rgba(21, 24, 29, 0.06),
-      rgba(21, 24, 29, 0.06) 1px,
-      transparent 1px,
-      transparent 8px
-    );
-  }
-  .hatch-accent {
-    background-image: repeating-linear-gradient(
-      45deg,
-      rgba(28, 68, 255, 0.12),
-      rgba(28, 68, 255, 0.12) 1px,
-      transparent 1px,
-      transparent 7px
-    );
-  }
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Texto degradado — adapta al tema */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--text-gradient);
+  }
+
+  /* Barra superior / sidebar con efecto vidrio */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Brillo de borde para foco/estado activo */
+  .ring-glow {
+    box-shadow: var(--ring-glow);
+  }
+
+  /* Punto de glow que sigue el acento activo */
+  .dot-accent-glow {
+    box-shadow: var(--dot-accent-glow);
   }
 }

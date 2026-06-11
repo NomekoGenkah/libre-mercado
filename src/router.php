@@ -135,6 +135,11 @@ function crearRouter(): Router
     $r->agregar('POST', '/auth/logout', 'AuthController@logout', ['auth' => true]);
     $r->agregar('GET',  '/auth/me',     'AuthController@me',     ['auth' => true]);
 
+    // --- Catálogo público (vitrina del comprador, SIN sesión) ---------------
+    //  Solo lectura. Productos activos + disponibilidad agregada de sucursales.
+    $r->agregar('GET', '/catalogo',     'CatalogoController@listar');
+    $r->agregar('GET', '/catalogo/:id', 'CatalogoController@obtener');
+
     // --- Categorías (apoyo al formulario de productos) ----------------------
     $r->agregar('GET', '/categorias', 'ProductoController@categorias', ['auth' => true]);
 

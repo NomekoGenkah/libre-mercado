@@ -9,6 +9,7 @@ import { DataTable } from '../components/ui/DataTable'
 import { Modal, ConfirmDialog } from '../components/ui/Modal'
 import { Field, TextInput } from '../components/ui/Field'
 import { SearchBox } from './Productos'
+import { Icon } from '../components/ui/icons'
 import { folio } from '../lib/format'
 
 const VACIO = { proveedor: '', contacto: '', email: '' }
@@ -103,14 +104,14 @@ export default function Proveedores() {
   return (
     <>
       <PageHeader
-        codigo="CAT · 03"
+        codigo="Catálogo"
         titulo="Proveedores"
         descripcion="Proveedores para reabastecimiento (nodo central). Referenciados por las compras de cada sucursal."
       >
         <SearchBox value={busca} onChange={setBusca} placeholder="Buscar proveedor…" />
         {puedeEditar && (
           <button className="btn-primary" onClick={abrirCrear}>
-            + Nuevo proveedor
+            <Icon name="plus" className="h-4 w-4" /> Nuevo proveedor
           </button>
         )}
       </PageHeader>

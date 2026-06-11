@@ -9,6 +9,7 @@ import { DataTable } from '../components/ui/DataTable'
 import { Modal } from '../components/ui/Modal'
 import { Field, Select } from '../components/ui/Field'
 import { SucursalTabs } from '../components/ui/SucursalTabs'
+import { Icon } from '../components/ui/icons'
 import { dinero, numero, fechaHora, folio, nombreNodo } from '../lib/format'
 
 export default function Compras() {
@@ -35,13 +36,13 @@ export default function Compras() {
   return (
     <>
       <PageHeader
-        codigo="OPS · 03"
+        codigo="Operación"
         titulo="Reabastecimiento"
-        descripcion="Compra a proveedor que aumenta el stock. Es una transacción ACID local: compra + detalle + stock + movimiento viven en el mismo nodo de sucursal."
+        descripcion="Compra a proveedor que aumenta el stock. Es una transacción ACID local: compra, detalle, stock y movimiento viven en el mismo nodo de sucursal."
       >
         {puedeComprar && (
           <button className="btn-primary" onClick={() => setNueva(true)}>
-            ▲ Nueva compra
+            <Icon name="plus" className="h-4 w-4" /> Nueva compra
           </button>
         )}
       </PageHeader>
@@ -160,7 +161,7 @@ function NuevaCompra({ onClose, onHecho }) {
             Cancelar
           </button>
           <button className="btn-primary" onClick={confirmar} disabled={enviando || lineas.length === 0}>
-            {enviando ? <Spinner size={14} className="border-white/40 border-t-white" /> : '▲'} Registrar compra
+            {enviando ? <Spinner size={14} /> : <Icon name="check" className="h-4 w-4" />} Registrar compra
           </button>
         </>
       }

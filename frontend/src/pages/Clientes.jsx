@@ -9,6 +9,7 @@ import { DataTable } from '../components/ui/DataTable'
 import { Modal, ConfirmDialog } from '../components/ui/Modal'
 import { Field, TextInput } from '../components/ui/Field'
 import { SearchBox } from './Productos'
+import { Icon } from '../components/ui/icons'
 import { folio } from '../lib/format'
 
 const VACIO = { nombre: '', email: '', telefono: '' }
@@ -104,14 +105,14 @@ export default function Clientes() {
   return (
     <>
       <PageHeader
-        codigo="CAT · 02"
+        codigo="Catálogo"
         titulo="Clientes"
-        descripcion="Maestro de clientes (nodo central). El email es único; un duplicado responde 409."
+        descripcion="Maestro de clientes alojado en el nodo central. El email es único por cliente."
       >
         <SearchBox value={busca} onChange={setBusca} placeholder="Buscar cliente…" />
         {puedeEditar && (
           <button className="btn-primary" onClick={abrirCrear}>
-            + Nuevo cliente
+            <Icon name="plus" className="h-4 w-4" /> Nuevo cliente
           </button>
         )}
       </PageHeader>

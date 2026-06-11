@@ -7,9 +7,9 @@ export function AppLayout() {
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <div className="lg:pl-60">
+      <div className="lg:pl-64">
         <Topbar />
-        <main className="mx-auto max-w-[1320px] px-5 py-6 lg:px-8 lg:py-8">
+        <main className="mx-auto max-w-[1320px] px-5 py-7 lg:px-8 lg:py-9">
           <Outlet />
         </main>
       </div>
@@ -17,20 +17,16 @@ export function AppLayout() {
   )
 }
 
-// Encabezado de página reutilizable: kicker técnico + título + acciones.
+// Encabezado de página reutilizable: eyebrow + título + acciones.
 export function PageHeader({ codigo, titulo, descripcion, children }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
-      <div>
-        {codigo && (
-          <p className="mb-1.5 font-mono text-[10px] uppercase tracking-wider3 text-accent">{codigo}</p>
-        )}
-        <h1 className="font-display text-2xl font-800 tracking-tight text-ink lg:text-[28px]">
-          {titulo}
-        </h1>
-        {descripcion && <p className="mt-1.5 max-w-2xl text-sm text-ink-muted">{descripcion}</p>}
+    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+      <div className="animate-riseIn">
+        {codigo && <p className="mb-1.5 kicker text-accent">{codigo}</p>}
+        <h1 className="font-display text-2xl font-800 tracking-tight text-ink lg:text-[30px]">{titulo}</h1>
+        {descripcion && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{descripcion}</p>}
       </div>
-      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
+      {children && <div className="flex flex-wrap items-center gap-2.5">{children}</div>}
     </div>
   )
 }

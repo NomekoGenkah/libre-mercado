@@ -1,8 +1,15 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { AppLayout } from './components/layout/AppLayout'
+import { PublicLayout } from './components/layout/PublicLayout'
 import { Spinner } from './components/ui/primitives'
+import { inicioDeRol } from './components/layout/nav'
 
+// Tienda pública (comprador, SIN login)
+import Tienda from './pages/Tienda'
+import ProductoPublico from './pages/ProductoPublico'
+
+// Consola interna (staff)
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Productos from './pages/Productos'
@@ -38,17 +45,27 @@ function Protegido({ children }) {
   return children
 }
 
-// Verja de rol admin (Usuarios, Simulador CAP).
-function SoloAdmin({ children }) {
-  const { tieneRol } = useAuth()
-  return tieneRol('admin') ? children : <Navigate to="/dashboard" replace />
+// Verja de rol. `roles` = perfiles permitidos (admin siempre pasa). Si el rol
+// no califica, lo devolvemos al inicio que le corresponde a su perfil — así un
+// vendedor nunca aterriza en una pantalla de infraestructura.
+function ConRol({ roles, children }) {
+  const { usuario, tieneRol } = useAuth()
+  if (!tieneRol(...roles)) return <Navigate to={inicioDeRol(usuario?.rol)} replace />
+  return children
 }
 
 export default function App() {
   return (
     <Routes>
+      {/* ---- Mundo público: la tienda que ve un comprador sin sesión ---- */}
+      <Route element={<PublicLayout />}>
+        <Route index element={<Tienda />} />
+        <Route path="/producto/:id" element={<ProductoPublico />} />
+      </Route>
+
       <Route path="/login" element={<Login />} />
 
+      {/* ---- Mundo interno: consola de operación (requiere sesión) ---- */}
       <Route
         element={
           <Protegido>
@@ -56,30 +73,15 @@ export default function App() {
           </Protegido>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/productos" element={<Productos />} />
-        <Route path="/clientes" element={<Clientes />} />
-        <Route path="/proveedores" element={<Proveedores />} />
-        <Route path="/ventas" element={<Ventas />} />
-        <Route path="/stock" element={<Stock />} />
-        <Route path="/compras" element={<Compras />} />
-        <Route
-          path="/usuarios"
-          element={
-            <SoloAdmin>
-              <Usuarios />
-            </SoloAdmin>
-          }
-        />
-        <Route
-          path="/simulador-cap"
-          element={
-            <SoloAdmin>
-              <SimuladorCap />
-            </SoloAdmin>
-          }
-        />
+        <Route path="/dashboard" element={<ConRol roles={['vendedor', 'bodeguero']}><Dashboard /></ConRol>} />
+        <Route path="/ventas" element={<ConRol roles={['vendedor']}><Ventas /></ConRol>} />
+        <Route path="/stock" element={<ConRol roles={['vendedor', 'bodeguero']}><Stock /></ConRol>} />
+        <Route path="/compras" element={<ConRol roles={['bodeguero']}><Compras /></ConRol>} />
+        <Route path="/productos" element={<ConRol roles={['vendedor', 'bodeguero']}><Productos /></ConRol>} />
+        <Route path="/clientes" element={<ConRol roles={['vendedor']}><Clientes /></ConRol>} />
+        <Route path="/proveedores" element={<ConRol roles={['bodeguero']}><Proveedores /></ConRol>} />
+        <Route path="/usuarios" element={<ConRol roles={[]}><Usuarios /></ConRol>} />
+        <Route path="/simulador-cap" element={<ConRol roles={[]}><SimuladorCap /></ConRol>} />
         <Route path="*" element={<NoEncontrado />} />
       </Route>
     </Routes>

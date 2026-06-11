@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -9,5 +10,15 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+  },
+  // Pruebas unitarias (Vitest). Las e2e de Playwright viven en ./e2e y se
+  // excluyen aquí para que cada runner tome solo lo suyo.
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.js',
+    include: ['src/**/*.test.{js,jsx}'],
+    exclude: ['e2e/**', 'node_modules/**'],
+    css: false,
   },
 })

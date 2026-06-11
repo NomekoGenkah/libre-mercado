@@ -1,34 +1,27 @@
 // ===========================================================================
-//  Primitivas de UI de la consola técnica. Componentes pequeños y sin estado
-//  reutilizados por todas las pantallas. Esquinas rectas, mono para etiquetas.
+//  Primitivas de UI. Componentes pequeños y sin estado reutilizados por todas
+//  las pantallas. Tema oscuro, esquinas suaves.
 // ===========================================================================
 
-/** Etiqueta técnica en mayúsculas. */
+import { Icon } from './icons'
+
+/** Etiqueta tenue en mayúsculas (eyebrow). */
 export function Kicker({ children, className = '' }) {
   return <span className={`kicker ${className}`}>{children}</span>
 }
 
-/** Marcas de registro (crosshair) en las cuatro esquinas de un contenedor. */
-export function CornerMarks({ className = 'text-accent' }) {
-  const base =
-    'pointer-events-none absolute h-2.5 w-2.5 border-accent opacity-70'
-  return (
-    <div className={`${className} absolute inset-0`} aria-hidden>
-      <span className={`${base} left-0 top-0 border-l border-t`} />
-      <span className={`${base} right-0 top-0 border-r border-t`} />
-      <span className={`${base} bottom-0 left-0 border-b border-l`} />
-      <span className={`${base} bottom-0 right-0 border-b border-r`} />
-    </div>
-  )
+/** (Compat) Antiguas marcas de registro: ahora no dibujan nada. */
+export function CornerMarks() {
+  return null
 }
 
-/** Panel base con título técnico opcional. */
+/** Panel base con cabecera opcional. */
 export function Panel({ title, aside, children, className = '', bodyClassName = 'p-5' }) {
   return (
     <section className={`panel shadow-frame ${className}`}>
       {(title || aside) && (
-        <header className="flex items-center justify-between border-b border-line px-5 py-3">
-          {title && <Kicker className="text-ink-muted">{title}</Kicker>}
+        <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+          {title && <h2 className="font-display text-sm font-700 text-ink">{title}</h2>}
           {aside}
         </header>
       )}
@@ -38,19 +31,27 @@ export function Panel({ title, aside, children, className = '', bodyClassName = 
 }
 
 const TONOS_CHIP = {
-  neutral: 'border-line text-ink-muted bg-paper',
-  accent: 'border-accent text-accent bg-accent-soft',
-  ok: 'border-ok text-ok bg-okSoft',
-  warn: 'border-warn text-warn bg-warnSoft',
-  danger: 'border-danger text-danger bg-dangerSoft',
-  ink: 'border-line-strong text-ink bg-paper',
+  neutral: 'border-line text-ink-muted bg-surface2/70',
+  accent: 'border-accent/40 text-accent bg-accent/10',
+  ok: 'border-ok/40 text-ok bg-ok/10',
+  warn: 'border-warn/40 text-warn bg-warn/10',
+  danger: 'border-danger/40 text-danger bg-danger/10',
+  ink: 'border-line-strong text-ink-soft bg-surface2/70',
 }
 
 /** Chip / badge semántico. */
 export function Chip({ tono = 'neutral', children, dot = false, className = '' }) {
+  const dotColor = {
+    neutral: 'bg-ink-faint',
+    accent: 'bg-accent',
+    ok: 'bg-ok',
+    warn: 'bg-warn',
+    danger: 'bg-danger',
+    ink: 'bg-ink-soft',
+  }[tono]
   return (
     <span className={`chip ${TONOS_CHIP[tono]} ${className}`}>
-      {dot && <span className="h-1.5 w-1.5 bg-current" />}
+      {dot && <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />}
       {children}
     </span>
   )
@@ -59,8 +60,8 @@ export function Chip({ tono = 'neutral', children, dot = false, className = '' }
 /** Semáforo de stock: rojo / amarillo / verde. */
 export function StockDot({ estado }) {
   const mapa = {
-    rojo: { tono: 'danger', etq: 'CRÍTICO' },
-    amarillo: { tono: 'warn', etq: 'BAJO' },
+    rojo: { tono: 'danger', etq: 'Crítico' },
+    amarillo: { tono: 'warn', etq: 'Bajo' },
     verde: { tono: 'ok', etq: 'OK' },
   }
   const s = mapa[estado] || { tono: 'neutral', etq: estado || '—' }
@@ -71,32 +72,35 @@ export function StockDot({ estado }) {
   )
 }
 
-/** Spinner técnico (cuadrado girando, sin curvas). */
+/** Spinner circular. */
 export function Spinner({ size = 16, className = '' }) {
   return (
     <span
-      className={`inline-block animate-[spin_0.9s_linear_infinite] border-2 border-line border-t-accent ${className}`}
+      className={`inline-block animate-[spin_0.8s_linear_infinite] rounded-full border-2 border-white/15 border-t-accent ${className}`}
       style={{ width: size, height: size }}
       aria-label="Cargando"
     />
   )
 }
 
-/** Estado de carga centrado para paneles. */
-export function Cargando({ texto = 'Consultando nodos…' }) {
+/** Estado de carga centrado. */
+export function Cargando({ texto = 'Cargando…' }) {
   return (
     <div className="flex items-center justify-center gap-3 py-16 text-ink-muted">
       <Spinner />
-      <span className="font-mono text-xs uppercase tracking-wider2">{texto}</span>
+      <span className="text-sm">{texto}</span>
     </div>
   )
 }
 
-/** Estado vacío con hachura diagonal. */
+/** Estado vacío. */
 export function Vacio({ titulo = 'Sin registros', detalle, accion }) {
   return (
-    <div className="hatch flex flex-col items-center justify-center gap-3 border border-dashed border-line py-14 text-center">
-      <p className="font-mono text-xs uppercase tracking-wider2 text-ink-muted">{titulo}</p>
+    <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+      <span className="grid h-11 w-11 place-items-center rounded-full border border-line bg-surface2 text-ink-faint">
+        <Icon name="search" className="h-5 w-5" />
+      </span>
+      <p className="text-sm font-600 text-ink-soft">{titulo}</p>
       {detalle && <p className="max-w-sm text-sm text-ink-faint">{detalle}</p>}
       {accion}
     </div>
@@ -107,11 +111,9 @@ export function Vacio({ titulo = 'Sin registros', detalle, accion }) {
 export function ErrorBanner({ children }) {
   if (!children) return null
   return (
-    <div className="panel border-l-[3px] border-danger bg-dangerSoft px-4 py-3">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 font-mono text-[10px] tracking-wider2 text-danger">ERR</span>
-        <p className="text-sm text-ink-soft">{children}</p>
-      </div>
+    <div className="mb-4 flex items-start gap-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3">
+      <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
+      <p className="text-sm text-ink-soft">{children}</p>
     </div>
   )
 }

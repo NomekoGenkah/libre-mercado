@@ -8,6 +8,7 @@ import { Panel, Chip, ErrorBanner } from '../components/ui/primitives'
 import { DataTable } from '../components/ui/DataTable'
 import { Modal, ConfirmDialog } from '../components/ui/Modal'
 import { Field, TextInput, TextArea, Select } from '../components/ui/Field'
+import { Icon } from '../components/ui/icons'
 import { dinero, folio } from '../lib/format'
 
 const VACIO = { producto: '', precio: '', descripcion: '', id_cat: '' }
@@ -120,14 +121,14 @@ export default function Productos() {
   return (
     <>
       <PageHeader
-        codigo="CAT · 01"
+        codigo="Catálogo"
         titulo="Productos"
-        descripcion="Catálogo global (nodo central). El borrado es lógico: desactiva el producto sin romper historiales."
+        descripcion="Catálogo global alojado en el nodo central. El borrado es lógico: desactiva el producto sin romper historiales."
       >
         <SearchBox value={busca} onChange={setBusca} placeholder="Buscar producto…" />
         {puedeEditar && (
           <button className="btn-primary" onClick={abrirCrear}>
-            + Nuevo producto
+            <Icon name="plus" className="h-4 w-4" /> Nuevo producto
           </button>
         )}
       </PageHeader>
@@ -163,7 +164,7 @@ export default function Productos() {
         open={!!modal}
         onClose={() => setModal(null)}
         title={modal?.modo === 'crear' ? 'Nuevo producto' : `Editar · ${modal?.prod?.producto}`}
-        subtitle="Catálogo central · prepared statements en backend"
+        subtitle="Catálogo del nodo central"
         footer={
           <>
             <button className="btn-quiet" onClick={() => setModal(null)} disabled={guardando}>
@@ -233,14 +234,14 @@ export default function Productos() {
 export function SearchBox({ value, onChange, placeholder }) {
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono text-xs text-ink-faint">
-        ⌕
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint">
+        <Icon name="search" className="h-4 w-4" />
       </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full border border-line bg-surface pl-8 pr-3 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none sm:w-64"
+        className="h-10 w-full rounded-lg border border-line bg-paper pl-9 pr-3 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 sm:w-64"
       />
     </div>
   )

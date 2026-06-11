@@ -9,6 +9,7 @@ import { DataTable } from '../components/ui/DataTable'
 import { Modal } from '../components/ui/Modal'
 import { Field, Select } from '../components/ui/Field'
 import { SucursalTabs } from '../components/ui/SucursalTabs'
+import { Icon } from '../components/ui/icons'
 import { dinero, numero, fechaHora, folio, nombreNodo } from '../lib/format'
 
 export default function Ventas() {
@@ -38,13 +39,13 @@ export default function Ventas() {
   return (
     <>
       <PageHeader
-        codigo="OPS · 01"
+        codigo="Operación"
         titulo="Ventas"
-        descripcion="Cada venta es una transacción distribuida (Two-Phase Commit): cabecera en el nodo central + descuento de stock en la sucursal, atómicamente."
+        descripcion="Cada venta es una transacción distribuida (Two-Phase Commit): cabecera en el nodo central y descuento de stock en la sucursal, de forma atómica."
       >
         {puedeVender && (
           <button className="btn-primary" onClick={() => setNueva(true)}>
-            ◇ Nueva venta
+            <Icon name="plus" className="h-4 w-4" /> Nueva venta
           </button>
         )}
       </PageHeader>
@@ -189,7 +190,7 @@ function NuevaVenta({ onClose, onHecho }) {
             Cancelar
           </button>
           <button className="btn-primary" onClick={confirmar} disabled={enviando || lineas.length === 0}>
-            {enviando ? <Spinner size={14} className="border-white/40 border-t-white" /> : '◇'} Confirmar venta
+            {enviando ? <Spinner size={14} /> : <Icon name="check" className="h-4 w-4" />} Confirmar venta
           </button>
         </>
       }

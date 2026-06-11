@@ -8,6 +8,7 @@ import { DataTable } from '../components/ui/DataTable'
 import { Modal, ConfirmDialog } from '../components/ui/Modal'
 import { Field, TextInput, Select } from '../components/ui/Field'
 import { SearchBox } from './Productos'
+import { Icon } from '../components/ui/icons'
 import { folio } from '../lib/format'
 
 const ROLES = ['admin', 'vendedor', 'bodeguero']
@@ -103,13 +104,13 @@ export default function Usuarios() {
   return (
     <>
       <PageHeader
-        codigo="SYS · 04"
+        codigo="Administración"
         titulo="Usuarios"
-        descripcion="Cuentas de acceso (nodo central). Contraseñas con bcrypt; el hash nunca se expone en la API."
+        descripcion="Cuentas de acceso (nodo central). Las contraseñas se almacenan cifradas con bcrypt."
       >
         <SearchBox value={busca} onChange={setBusca} placeholder="Buscar usuario…" />
         <button className="btn-primary" onClick={abrirCrear}>
-          + Nuevo usuario
+          <Icon name="plus" className="h-4 w-4" /> Nuevo usuario
         </button>
       </PageHeader>
 

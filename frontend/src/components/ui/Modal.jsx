@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { CornerMarks, Kicker } from './primitives'
+import { Icon } from './icons'
 
-// Diálogo modal técnico. Cierra con Escape o clic en el velo.
+// Diálogo modal. Cierra con Escape o clic en el velo.
 export function Modal({ open, onClose, title, subtitle, children, footer, width = 'max-w-lg' }) {
   useEffect(() => {
     if (!open) return
@@ -18,17 +18,12 @@ export function Modal({ open, onClose, title, subtitle, children, footer, width 
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-4 sm:p-8">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-fadeIn" onClick={onClose} aria-hidden />
       <div
-        className="fixed inset-0 bg-ink/40 backdrop-blur-[1px] animate-fadeIn"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div
-        className={`panel relative z-10 mt-6 w-full ${width} bg-surface shadow-lift animate-riseIn`}
+        className={`panel relative z-10 mt-6 w-full ${width} bg-surface shadow-lift animate-scaleIn`}
         role="dialog"
         aria-modal="true"
       >
-        <CornerMarks />
         <header className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
           <div>
             <h2 className="font-display text-lg font-700 tracking-tight text-ink">{title}</h2>
@@ -36,15 +31,15 @@ export function Modal({ open, onClose, title, subtitle, children, footer, width 
           </div>
           <button
             onClick={onClose}
-            className="font-mono text-sm text-ink-faint transition-colors hover:text-ink"
+            className="grid h-8 w-8 place-items-center rounded-lg text-ink-faint transition-colors hover:bg-surface2 hover:text-ink"
             aria-label="Cerrar"
           >
-            ESC ✕
+            <Icon name="close" className="h-4 w-4" />
           </button>
         </header>
         <div className="px-6 py-5">{children}</div>
         {footer && (
-          <footer className="flex items-center justify-end gap-2 border-t border-line bg-paper px-6 py-3">
+          <footer className="flex items-center justify-end gap-2.5 border-t border-line bg-paper/40 px-6 py-4 rounded-b-xl">
             {footer}
           </footer>
         )}
@@ -73,8 +68,10 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, mensaje, confir
       }
     >
       <div className="flex items-start gap-3">
-        <Kicker className="mt-1 text-danger">!!</Kicker>
-        <p className="text-sm leading-relaxed text-ink-soft">{mensaje}</p>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger/12 text-danger">
+          <Icon name="alert" className="h-5 w-5" />
+        </span>
+        <p className="pt-1 text-sm leading-relaxed text-ink-soft">{mensaje}</p>
       </div>
     </Modal>
   )
