@@ -35,7 +35,10 @@ class Config
 
         return [
             'host'   => self::env("{$p}_HOST"),
-            'port'   => (int) (self::env('DB_PORT', '3306')),
+            // Puerto por nodo: permite que un nodo remoto use un puerto distinto
+            // (p.ej. Este vía un forward host:33060). Si no hay {PREFIJO}_PORT,
+            // cae al DB_PORT global (3306).
+            'port'   => (int) (self::env("{$p}_PORT", self::env('DB_PORT', '3306'))),
             'dbname' => self::env("{$p}_DB"),
             'user'   => self::env("{$p}_USER"),
             'pass'   => self::env("{$p}_PASSWORD"),

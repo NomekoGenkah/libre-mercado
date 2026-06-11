@@ -97,6 +97,12 @@ class UsuarioController
             }
         }
 
+        // Guard anti-bloqueo: no permitir quitarle el rol admin al último
+        // administrador activo (dejaría al sistema sin forma de administrarse).
+        if ($usr['rol'] === 'admin' && $rol !== 'admin' && self::esUltimoAdminActivo($central, $usr)) {
+            Response::error('No se puede quitar el rol admin al último administrador activo del sistema.', 409);
+        }
+
         // password sólo se reescribe si viene un valor no vacío.
         $sets   = ['username = ?', 'rol = ?', 'id_cli = ?'];
         $vals   = [$username, $rol, $id_cli];
@@ -131,6 +137,16 @@ class UsuarioController
         if ((int) $usr['activo'] === 0) {
             Response::error("El usuario $id ya está inactivo.", 409);
         }
+
+        // Guards anti-bloqueo: evitar quedarse sin acceso administrativo.
+        $actual = Auth::usuarioActual();
+        if ($actual && (int) $actual['id_usr'] === $id) {
+            Response::error('No puedes desactivar tu propio usuario mientras tu sesión está activa.', 409);
+        }
+        if (self::esUltimoAdminActivo($central, $usr)) {
+            Response::error('No se puede desactivar al último administrador activo del sistema.', 409);
+        }
+
         $central->prepare("UPDATE usuarios SET activo = 0 WHERE id_usr = ?")->execute([$id]);
         Response::exito(['id_usr' => $id, 'activo' => 0]);
     }
@@ -152,5 +168,23 @@ class UsuarioController
         $stmt = $central->prepare("SELECT 1 FROM roles WHERE rol = ?");
         $stmt->execute([$rol]);
         return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * ¿El usuario dado es el ÚNICO administrador activo del sistema?
+     * Sirve para impedir el auto-bloqueo (desactivar/degradar al último admin).
+     *
+     * @param array $usr fila de usuario (con 'id_usr', 'rol', 'activo').
+     */
+    private static function esUltimoAdminActivo(PDO $central, array $usr): bool
+    {
+        if ($usr['rol'] !== 'admin' || (int) $usr['activo'] !== 1) {
+            return false;
+        }
+        $stmt = $central->prepare(
+            "SELECT COUNT(*) FROM usuarios WHERE rol = 'admin' AND activo = 1 AND id_usr <> ?"
+        );
+        $stmt->execute([(int) $usr['id_usr']]);
+        return (int) $stmt->fetchColumn() === 0;
     }
 }

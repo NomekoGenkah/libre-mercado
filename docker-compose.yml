@@ -117,6 +117,11 @@ services:
         condition: service_healthy
     ports:
       - "8080:80"
+    # Permite que el contenedor alcance servicios del HOST (p.ej. el forward
+    # socat hacia el nodo Este remoto vía Tailscale). 'host-gateway' funciona
+    # tanto en Docker Desktop como en Docker nativo.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./src:/var/www/html
       # Pruebas modulares: se ejecutan con el `php` del contenedor.
@@ -142,6 +147,9 @@ services:
       ESTE_DB: ${ESTE_DB}
       ESTE_USER: ${ESTE_USER}
       ESTE_PASSWORD: ${ESTE_PASSWORD}
+      # Puerto del nodo Este (por defecto 3306; en la demo distribuida apunta
+      # al forward host:33060 que cruza a Tailscale).
+      ESTE_PORT: ${ESTE_PORT:-3306}
       # CORS para el frontend Vite
       CORS_ORIGIN: ${CORS_ORIGIN}
     networks:
