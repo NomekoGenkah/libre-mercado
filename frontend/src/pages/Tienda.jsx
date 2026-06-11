@@ -4,6 +4,7 @@ import { useFetch } from '../hooks/useFetch'
 import { dinero } from '../lib/format'
 import { Cargando, Chip, ErrorBanner, Vacio } from '../components/ui/primitives'
 import { Icon } from '../components/ui/icons'
+import { ImagenProducto } from '../components/ui/ImagenProducto'
 
 // ===========================================================================
 //  Tienda pública (vitrina del comprador). Solo lectura: feed de productos
@@ -122,9 +123,9 @@ function ProductoCard({ prod, delay = 0 }) {
       className="group flex animate-riseIn flex-col rounded-xl border border-line bg-surface/60 p-4 transition-all hover:border-accent/50 hover:bg-surface2/60 hover:shadow-lift"
       style={{ animationDelay: `${delay}ms` }}
     >
-      {/* Marcador visual (sin imágenes en el seed) */}
-      <div className="mb-4 grid h-32 place-items-center rounded-lg border border-line bg-paper">
-        <Icon name="productos" className="h-9 w-9 text-ink-faint transition-colors group-hover:text-accent" />
+      {/* Imagen del producto (con fallback al ícono si falta el archivo) */}
+      <div className="mb-4 h-32 overflow-hidden rounded-lg border border-line bg-paper">
+        <ImagenProducto idProd={prod.id_prod} alt={prod.producto} />
       </div>
 
       <div className="mb-1 flex items-center justify-between gap-2">

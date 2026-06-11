@@ -3,6 +3,7 @@ import { useFetch } from '../hooks/useFetch'
 import { dinero, numero } from '../lib/format'
 import { Cargando, Chip, ErrorBanner } from '../components/ui/primitives'
 import { Icon } from '../components/ui/icons'
+import { ImagenProducto } from '../components/ui/ImagenProducto'
 
 // ===========================================================================
 //  Detalle público de un producto. Solo lectura: ficha + disponibilidad.
@@ -28,9 +29,9 @@ export default function ProductoPublico() {
         <Cargando texto="Cargando producto…" />
       ) : !p ? null : (
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Visual */}
-          <div className="grid aspect-[4/3] place-items-center rounded-2xl border border-line bg-surface/60 animate-riseIn">
-            <Icon name="productos" className="h-20 w-20 text-ink-faint" />
+          {/* Imagen del producto (con fallback al ícono si falta el archivo) */}
+          <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface/60 animate-riseIn">
+            <ImagenProducto idProd={p.id_prod} alt={p.producto} />
           </div>
 
           {/* Ficha */}
