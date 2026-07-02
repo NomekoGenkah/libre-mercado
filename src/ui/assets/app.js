@@ -296,10 +296,56 @@
     if (el && el.parentNode) el.parentNode.replaceChild(d, el);
   }
 
+  // -------------------------------------------------------------- sidebar toggle (mobile)
+  function initSidebar() {
+    var btn = document.getElementById('btnSidebar');
+    var aside = document.querySelector('.sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    if (!btn || !aside) return;
+    function close() { aside.classList.remove('open'); if (overlay) overlay.classList.remove('show'); }
+    function open() { aside.classList.add('open'); if (overlay) overlay.classList.add('show'); }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (aside.classList.contains('open')) close(); else open();
+    });
+    if (overlay) overlay.addEventListener('click', close);
+    // close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && aside.classList.contains('open')) close();
+    });
+  }
+
+  // -------------------------------------------------------------- theme
+  function toggleTheme() {
+    var html = document.documentElement;
+    var isLight = html.getAttribute('data-theme') === 'light';
+    var next = isLight ? null : 'light';
+    if (next) html.setAttribute('data-theme', next); else html.removeAttribute('data-theme');
+    localStorage.setItem('lm-theme', next || 'dark');
+    updateThemeBtn();
+  }
+  function updateThemeBtn() {
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    document.querySelectorAll('#btnTheme').forEach(function (b) { b.textContent = isLight ? '☀' : '☾'; });
+  }
+  // aplicar tema guardado al cargar + event delegation para el botón
+  (function () {
+    var saved = localStorage.getItem('lm-theme');
+    if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    document.addEventListener('DOMContentLoaded', function () {
+      updateThemeBtn();
+      initSidebar();
+      document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.id === 'btnTheme') toggleTheme();
+      });
+    });
+  })();
+
   // exportar
   window.LM = {
     api, ApiError, money, num, folio, fechaHora, nombreNodo, esc, toast,
     abrirModal, cerrarModal, valores, guard, tieneRol, logout, loading, vacio, page,
-    pagePublica, streamNodos, imagenProducto, imgProducto, tryNextExt, tryHideExt, galleryExt, imgGaleria, switchGalleryImg, imgFallback, renderTopo, user: null,
+    pagePublica, streamNodos, imagenProducto, imgProducto, tryNextExt, tryHideExt, galleryExt, imgGaleria, switchGalleryImg, imgFallback, renderTopo, toggleTheme, user: null,
   };
 })();

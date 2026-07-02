@@ -4,11 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ingreso · Libre Mercado</title>
+<script>!function(){var t=localStorage.getItem('lm-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light')}();</script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 <script src="assets/app.js"></script>
 </head>
 <body>
+<div style="position:fixed;top:16px;right:16px;z-index:10">
+  <button class="btn-theme" id="btnTheme" title="Cambiar tema">☾</button>
+</div>
 <div class="login-wrap">
   <form class="login-card" id="form">
     <div class="brand">

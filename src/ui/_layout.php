@@ -15,7 +15,7 @@ function ui_logo(): string
         . '<stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#a78bfa"/>'
         . '</linearGradient></defs>'
         . '<path d="M16 1.6 L28.5 8.8 L28.5 23.2 L16 30.4 L3.5 23.2 L3.5 8.8 Z" fill="url(#lm-grad)"/>'
-        . '<path d="M16 9.2 L22.7 13.1 L22.7 20.9 L16 24.8 L9.3 20.9 L9.3 13.1 Z" fill="#0b0b12" fill-opacity="0.55"/>'
+        . '<path d="M16 9.2 L22.7 13.1 L22.7 20.9 L16 24.8 L9.3 20.9 L9.3 13.1 Z" style="fill:var(--logo-cutout)" fill-opacity="0.55"/>'
         . '</svg>';
 }
 
@@ -53,6 +53,7 @@ function ui_head(string $active, string $title, string $subtitle = ''): void
 <title><?= htmlspecialchars($title) ?> · Libre Mercado</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>!function(){var t=localStorage.getItem('lm-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light')}();</script>
 <link rel="stylesheet" href="assets/styles.css">
 <script src="assets/app.js"></script>
 </head>
@@ -76,13 +77,16 @@ function ui_head(string $active, string $title, string $subtitle = ''): void
       <?php endforeach; ?>
     </nav>
   </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <div class="main">
     <div class="topbar">
+      <button class="btn-sidebar" id="btnSidebar" aria-label="Menú">☰</button>
       <div class="titles">
         <h1><?= htmlspecialchars($title) ?></h1>
         <?php if ($subtitle): ?><p><?= htmlspecialchars($subtitle) ?></p><?php endif; ?>
       </div>
       <div class="spacer"></div>
+        <button class="btn-theme" id="btnTheme" title="Cambiar tema">☾</button>
       <div class="userchip" id="userchip"></div>
     </div>
     <div class="content">
@@ -117,6 +121,7 @@ function ui_head_publico(string $title, string $subtitle = ''): void
 <title><?= htmlspecialchars($title) ?> · Libre Mercado</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>!function(){var t=localStorage.getItem('lm-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light')}();</script>
 <link rel="stylesheet" href="assets/styles.css">
 <script src="assets/app.js"></script>
 </head>
@@ -127,7 +132,10 @@ function ui_head_publico(string $title, string $subtitle = ''): void
         <?= ui_logo() ?>
         <div><b>Libre Mercado</b><small>Tienda en línea</small></div>
       </a>
-      <a class="btn ghost" href="login.php">Ingresar</a>
+      <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn-theme" id="btnTheme" title="Cambiar tema">☾</button>
+        <a class="btn ghost" href="login.php">Ingresar</a>
+      </div>
     </div>
   </header>
   <main class="pub-main"><div class="pub-wrap">
