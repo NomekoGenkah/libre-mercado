@@ -34,40 +34,28 @@ class StockController
         $nodo = Database::getNodoPorSucursal($id_suc);
         $suc  = Database::conectarSucursal($nodo);
 
-        $stmt = $suc->prepare("SELECT id_stock, cantidad FROM stock WHERE id_prod = ? AND id_suc = ?");
+        // El registro de stock debe existir (404 limpio antes de llamar al SP).
+        $stmt = $suc->prepare("SELECT 1 FROM stock WHERE id_prod = ? AND id_suc = ?");
         $stmt->execute([$id_prod, $id_suc]);
-        $fila = $stmt->fetch();
-        if (!$fila) {
+        if (!$stmt->fetchColumn()) {
             Response::error("No hay registro de stock del producto $id_prod en la sucursal $id_suc (nodo $nodo).", 404);
         }
 
-        $anterior = (int) $fila['cantidad'];
-        $delta = $nueva - $anterior;
-
-        try {
-            $suc->beginTransaction();
-            $suc->prepare("UPDATE stock SET cantidad = ? WHERE id_stock = ?")
-                ->execute([$nueva, $fila['id_stock']]);
-            $suc->prepare(
-                "INSERT INTO movimientos_stock (id_prod, id_suc, tipo, cantidad, motivo)
-                 VALUES (?, ?, 'ajuste', ?, ?)"
-            )->execute([$id_prod, $id_suc, $delta, $motivo]);
-            $suc->commit();
-        } catch (Throwable $e) {
-            if ($suc->inTransaction()) {
-                $suc->rollBack();
-            }
-            error_log("[StockController::ajustar] Rollback en nodo '$nodo': " . $e->getMessage());
-            throw $e;
-        }
+        // Procedimiento almacenado: ajusta el stock y registra el movimiento
+        // 'ajuste' en una transacción local atómica (la maneja el propio SP).
+        $res = Database::llamarProc(
+            $suc,
+            "CALL sp_actualizar_stock(?, ?, ?, ?)",
+            [$id_prod, $id_suc, $nueva, $motivo]
+        );
 
         Response::exito([
-            'id_prod'          => $id_prod,
-            'id_suc'           => $id_suc,
-            'cantidad_anterior' => $anterior,
-            'cantidad_nueva'    => $nueva,
-            'delta'            => $delta,
-            'motivo'           => $motivo,
+            'id_prod'           => $id_prod,
+            'id_suc'            => $id_suc,
+            'cantidad_anterior' => (int) $res['cantidad_anterior'],
+            'cantidad_nueva'    => (int) $res['cantidad_nueva'],
+            'delta'             => (int) $res['delta'],
+            'motivo'            => $motivo,
         ]);
     }
 
@@ -116,37 +104,23 @@ class StockController
         $nodo = Database::getNodoPorSucursal($id_suc);
         $suc  = Database::conectarSucursal($nodo);
 
+        // La vista v_stock ya trae el semáforo (estado) calculado en la BD.
         $stmt = $suc->prepare(
-            "SELECT id_stock, id_prod, id_suc, cantidad, cantidad_minima
-             FROM stock WHERE id_suc = ? ORDER BY id_prod"
+            "SELECT id_stock, id_prod, id_suc, cantidad, cantidad_minima, estado
+             FROM v_stock WHERE id_suc = ? ORDER BY id_prod"
         );
         $stmt->execute([$id_suc]);
         $filas = $stmt->fetchAll();
 
+        // Enriquecer con nombre/precio del producto (catálogo en central).
         $mapa = ProductoController::mapaPorIds(Database::conectarCentral(), array_column($filas, 'id_prod'));
-
         foreach ($filas as &$f) {
-            $cant = (int) $f['cantidad'];
-            $min  = (int) $f['cantidad_minima'];
             $prod = $mapa[(int) $f['id_prod']] ?? null;
             $f['producto'] = $prod['producto'] ?? null;
             $f['precio']   = $prod['precio'] ?? null;
-            $f['estado']   = self::estadoStock($cant, $min);
         }
         unset($f);
 
         return $filas;
-    }
-
-    /** Semáforo de inventario: rojo (≤ mínimo), amarillo (cerca), verde (ok). */
-    private static function estadoStock(int $cantidad, int $minimo): string
-    {
-        if ($cantidad <= $minimo) {
-            return 'rojo';
-        }
-        if ($cantidad <= $minimo * 1.5) {
-            return 'amarillo';
-        }
-        return 'verde';
     }
 }

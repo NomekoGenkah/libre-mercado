@@ -12,16 +12,11 @@ class ProductoController
     public function listar(array $params, array $body): void
     {
         $central = Database::conectarCentral();
-        $incluirInactivos = (($_GET['todos'] ?? '') === '1');
-
-        $sql = "SELECT p.id_prod, p.producto, p.precio, p.descripcion,
-                       p.id_cat, c.categoria, p.activo
-                FROM productos p
-                LEFT JOIN categorias c ON c.id_cat = p.id_cat";
-        if (!$incluirInactivos) {
-            $sql .= " WHERE p.activo = 1";
+        $sql = "SELECT * FROM v_catalogo";
+        if (($_GET['todos'] ?? '') !== '1') {
+            $sql .= " WHERE activo = 1";
         }
-        $sql .= " ORDER BY p.id_prod";
+        $sql .= " ORDER BY id_prod";
 
         Response::exito($central->query($sql)->fetchAll());
     }
@@ -124,13 +119,7 @@ class ProductoController
     /** Busca un producto por id (incluye inactivos) o null. */
     public static function buscar(PDO $central, int $id): ?array
     {
-        $stmt = $central->prepare(
-            "SELECT p.id_prod, p.producto, p.precio, p.descripcion,
-                    p.id_cat, c.categoria, p.activo
-             FROM productos p
-             LEFT JOIN categorias c ON c.id_cat = p.id_cat
-             WHERE p.id_prod = ?"
-        );
+        $stmt = $central->prepare("SELECT * FROM v_catalogo WHERE id_prod = ?");
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
     }

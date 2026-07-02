@@ -23,12 +23,10 @@ class CatalogoController
     {
         $central = Database::conectarCentral();
         $productos = $central->query(
-            "SELECT p.id_prod, p.producto, p.precio, p.descripcion,
-                    p.id_cat, c.categoria
-             FROM productos p
-             LEFT JOIN categorias c ON c.id_cat = p.id_cat
-             WHERE p.activo = 1
-             ORDER BY p.producto"
+            "SELECT id_prod, producto, precio, descripcion, id_cat, categoria
+             FROM v_catalogo
+             WHERE activo = 1
+             ORDER BY producto"
         )->fetchAll();
 
         [$disp, $caidos] = self::disponibilidadGlobal();
@@ -54,11 +52,9 @@ class CatalogoController
         $central = Database::conectarCentral();
 
         $stmt = $central->prepare(
-            "SELECT p.id_prod, p.producto, p.precio, p.descripcion,
-                    p.id_cat, c.categoria
-             FROM productos p
-             LEFT JOIN categorias c ON c.id_cat = p.id_cat
-             WHERE p.id_prod = ? AND p.activo = 1"
+            "SELECT id_prod, producto, precio, descripcion, id_cat, categoria
+             FROM v_catalogo
+             WHERE id_prod = ? AND activo = 1"
         );
         $stmt->execute([$id]);
         $prod = $stmt->fetch();

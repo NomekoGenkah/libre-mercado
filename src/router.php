@@ -130,6 +130,9 @@ function crearRouter(): Router
     ]));
     $r->agregar('GET', '/salud', fn() => verificarNodos());
 
+    // --- Métricas Prometheus (público, text/plain) --------------------------
+    $r->agregar('GET', '/metrics', 'MetricsController@exponer');
+
     // --- Autenticación ------------------------------------------------------
     $r->agregar('POST', '/auth/login',  'AuthController@login');
     $r->agregar('POST', '/auth/logout', 'AuthController@logout', ['auth' => true]);
@@ -192,6 +195,16 @@ function crearRouter(): Router
 
     // --- Movimientos de stock ----------------------------------------------
     $r->agregar('GET', '/movimientos/:id_suc', 'StockController@movimientos', ['auth' => true]);
+
+    // --- Reportes (vista con función de ventana) ---------------------------
+    $r->agregar('GET', '/reportes/ranking', 'ReporteController@ranking', ['auth' => true]);
+
+    // --- Nodos: estado de la red + falla simulada + recuperación -----------
+    $r->agregar('GET',  '/nodos',                  'NodoAdminController@listar',        ['auth' => true]);
+    $r->agregar('GET',  '/nodos/stream',           'NodoAdminController@stream',        ['auth' => true]);
+    $r->agregar('POST', '/nodos/:nodo/estado',     'NodoAdminController@cambiarEstado', ['roles' => ['admin']]);
+    $r->agregar('POST', '/nodos/:nodo/chaos',      'ChaosController@ejecutar',          ['roles' => ['admin']]);
+    $r->agregar('POST', '/nodos/:nodo/recuperar',  'NodoAdminController@recuperar',     ['roles' => ['admin']]);
 
     // --- Debug / simulación CAP --------------------------------------------
     $r->agregar('POST', '/debug/simular-fallo', 'DebugController@simularFallo', ['roles' => ['admin']]);

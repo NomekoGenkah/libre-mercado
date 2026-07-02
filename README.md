@@ -1,13 +1,18 @@
 # Libre Mercado
 
-Prototipo de sistema de **comercio electrónico distribuido** desarrollado para
-la segunda evaluación del curso de Sistemas Distribuidos (prof. Juan Torres O.).
+Prototipo de sistema de **comercio electrónico distribuido** para el curso de
+Sistemas Distribuidos (prof. Juan Torres O.). Cubre la **2ª evaluación** (CRUD
+distribuido, ACID, CAP, PHP/PDO) y la **3ª evaluación** (transacciones con
+**procedimientos almacenados**, **simulación de caída de nodos + recuperación**
+y consola **PHP + AJAX**).
 
 Simula un entorno de alta disponibilidad con múltiples nodos de base de datos
-distribuidos, backend en **PHP puro + PDO** y frontend en **React + Vite +
-Tailwind**. La arquitectura es **CP** (Consistencia + Tolerancia a Particiones):
-ante la caída de un nodo de sucursal, las ventas hacen rollback antes que
-permitir sobreventa.
+distribuidos (LAN Docker) y backend en **PHP puro + PDO**. La arquitectura es
+**CP** (Consistencia + Tolerancia a Particiones): ante la caída —real o
+simulada— de un nodo de sucursal, las ventas hacen rollback antes que permitir
+sobreventa. El frontend es una única consola **PHP + AJAX** en `src/ui/` (mismo
+origen que la API) con **dos mundos**: la **vitrina pública** del comprador
+(sin login) y la **consola interna** de operaciones (con sesión y roles).
 
 > 📐 La arquitectura completa, el plan de etapas y las convenciones de código
 > están documentados en [`CLAUDE.md`](./CLAUDE.md).
@@ -22,25 +27,31 @@ Red Docker `red_distribuida` (bridge) con 5 contenedores:
 | `nodo_sucursal_norte` | MariaDB 10.6 — sucursal Norte | `3307` |
 | `nodo_sucursal_sur` | MariaDB 10.6 — sucursal Sur | `3308` |
 | `nodo_sucursal_este` | MariaDB 10.6 — sucursal Este | `3309` |
-| `app_php` | Apache + PHP 8.2 — API REST | `8080` |
+| `app_php` | Apache + PHP 8.2 — API REST **+ consola PHP/AJAX (`/ui`)** | `8080` |
 
-El frontend React corre fuera de Docker en `localhost:5173` (Vite).
+La consola **PHP + AJAX** se sirve desde el propio `app_php` en
+`http://localhost:8080/ui/` (mismo origen que la API). No hay dependencias de
+Node/npm: todo el frontend lo sirve `app_php`.
 
 ## Estado del proyecto
 
-- ✅ **Etapa 1** — Infraestructura Docker
-- ✅ **Etapa 2** — Schemas SQL + datos de demo (seed)
-- ✅ **Etapa 3** — Capa de conexión PHP (PDO por nodo)
-- ✅ **Etapa 4** — Router y estructura base (front controller)
-- ✅ **Etapa 5** — Controllers CRUD (productos, clientes, usuarios,
-  proveedores, sucursales, stock, carrito)
-- ✅ **Etapa 6** — Transacciones ACID: venta distribuida (Two-Phase Commit) y
-  reabastecimiento (transacción local)
-- ✅ **Etapa 7** — Endpoint de simulación de fallo CAP (`/debug/simular-fallo`)
-- ✅ **Etapa 8** — Autenticación con sesiones PHP + roles
-- ✅ **Etapa 10** — Documento de arquitectura CAP ([`docs/arquitectura_CAP.md`](./docs/arquitectura_CAP.md))
-- ✅ **Etapa 9** — Frontend React + Vite + Tailwind ([`frontend/`](./frontend/README.md))
-- ⬜ Etapa 11 (verificación final)
+**2ª evaluación** — completa y verificada:
+
+- ✅ Infraestructura Docker · Schemas SQL + seed · Capa PDO por nodo · Router
+- ✅ CRUD de todas las entidades (borrado lógico)
+- ✅ Transacciones ACID: venta distribuida 2PC + reabastecimiento local
+- ✅ Simulación de fallo CAP (`/debug/simular-fallo`) + [documento CAP](./docs/arquitectura_CAP.md)
+- ✅ Autenticación con sesiones PHP + roles
+
+**3ª evaluación** — completa y verificada (ver [`docs/tercera_evaluacion.md`](./docs/tercera_evaluacion.md)):
+
+- ✅ **Procedimientos almacenados** en la venta distribuida (`sp_registrar_venta`,
+  `sp_realizar_compra`) y en el resto (`sp_actualizar_stock`, `sp_reponer_stock`,
+  `sp_reconstruir_stock`)
+- ✅ **Simulación de caída de nodos** (estado OFFLINE persistente) + **recuperación**
+  (`POST /nodos/:nodo/recuperar` → `sp_reconstruir_stock`)
+- ✅ **Consola PHP + AJAX** (`src/ui/`)
+- ✅ Suite automatizada en verde: **22 unit + 52 e2e** (`bash tests/run.sh`)
 
 ### Credenciales de demo (seed)
 
@@ -54,8 +65,7 @@ Ver el desglose completo en [`CLAUDE.md`](./CLAUDE.md).
 
 ## Requisitos
 
-- Docker + Docker Compose v2
-- (Para el frontend, más adelante) Node.js 18+
+- Docker + Docker Compose v2 (única dependencia; el frontend PHP lo sirve `app_php`)
 
 ## Puesta en marcha (Etapa 1)
 
@@ -101,6 +111,41 @@ curl -b cookies.txt http://localhost:8080/productos
 curl -b cookies.txt http://localhost:8080/stock/1
 ```
 
+## Tercera Evaluación (SD 2026) — distribuido, fallos y PHP + AJAX
+
+La Tercera evolución añade, sobre la base anterior:
+
+- **Procedimientos almacenados** en la transacción distribuida y en la
+  recuperación: `sp_realizar_compra` (descuento anti-sobreventa en sucursal),
+  `sp_registrar_venta` / `sp_agregar_detalle_venta` (central), `sp_actualizar_stock`
+  (ajuste), `sp_reponer_stock` (compra) y `sp_reconstruir_stock` (recuperación).
+  Viven en `sql/*/03_objetos.sql`.
+- **Simulación de caída de nodos**: marcar una sucursal `OFFLINE`
+  (`POST /nodos/:nodo/estado`) hace que sus operaciones respondan **503
+  controlado** (falla simulada, sin apagar Docker).
+- **Recuperación**: `POST /nodos/:nodo/recuperar` reactiva el nodo y ejecuta
+  `sp_reconstruir_stock`, reconstruyendo el stock desde el libro de movimientos.
+- **Consola PHP + AJAX** servida por el propio `app_php` (mismo origen).
+
+Documento técnico completo: [`docs/tercera_evaluacion.md`](./docs/tercera_evaluacion.md).
+
+> ⚠️ Los procedimientos se cargan en el *initdb* de MariaDB (`03_objetos.sql`).
+> Si actualizas desde una base ya creada, recrea los volúmenes para que se
+> carguen: `docker compose down -v && docker compose up -d --build`.
+
+### Frontend PHP + AJAX
+
+Abre **`http://localhost:8080/ui/`** en el navegador. Es un frontend en **PHP
+renderizado en el servidor** cuyas páginas piden **toda la data por AJAX**
+(`fetch`) a la API JSON, en el mismo origen. Tiene **dos mundos**:
+
+- **Vitrina pública** (`tienda.php`, `producto.php`) — el catálogo que ve un
+  comprador **sin sesión**: búsqueda, filtros por categoría, disponibilidad
+  agregada y ficha de producto. Es la puerta de entrada (`/ui/`).
+- **Consola interna** — con login (`admin` / `admin123`) y roles: panel, ventas,
+  compras, stock, CRUD, **Nodos** (simular falla + recuperar) y **Simulador CAP**.
+  Se entra por el botón **"Ingresar"**.
+
 ## Pruebas
 
 La suite cubre dos niveles y se corre con **un solo comando** (requiere el
@@ -145,20 +190,25 @@ docker compose down -v                # detener y borrar volúmenes de datos
 ├── Dockerfile             # imagen PHP 8.2 + Apache (pdo, pdo_mysql, mysqli)
 ├── .env / .env.example    # credenciales y hosts por nodo
 ├── src/                   # código PHP (montado en app_php:/var/www/html)
-│   ├── index.php          # front controller (CORS, sesión, ruteo)
+│   ├── index.php          # front controller de la API (CORS, sesión, ruteo)
 │   ├── router.php         # tabla de rutas → controllers
-│   ├── config/            # Config, Database (PDO por nodo), NodoException
+│   ├── config/            # Config, Database (PDO + estado OFFLINE), NodoException
 │   ├── helpers/           # Response, Auth, Validador
 │   ├── middleware/        # AuthMiddleware (guards de sesión/rol)
-│   └── controllers/       # Auth, Producto, Cliente, Usuario, Proveedor,
-│                          #   Sucursal, Stock, Carrito
+│   ├── controllers/       # Auth, Producto, Cliente, Usuario, Proveedor, Sucursal,
+│   │                      #   Stock, Carrito, Venta, Compra, Reporte, NodoAdmin, Debug
+│   └── ui/                # frontend PHP + AJAX: vitrina pública (tienda/producto)
+│                          #   + consola interna (login, panel, nodos, simulador…)
+│       └── assets/        #   app.js (motor fetch) + styles.css
 ├── tests/                 # pruebas (montado en app_php:/var/www/tests)
 │   ├── run.sh             # un comando: unit + e2e
 │   ├── unit/  lib/        # pruebas modulares (PHP puro)
 │   └── e2e/api.sh         # pruebas end-to-end (curl)
-├── sql/                   # scripts de init por nodo (Etapa 2)
+├── sql/                   # scripts de init por nodo
 │   ├── central/  norte/  sur/  este/
-├── docs/                  # documento de arquitectura CAP (Etapa 10)
+│   │   ├── 01_schema.sql  02_seed.sql
+│   │   └── 03_objetos.sql # vistas, trigger y PROCEDIMIENTOS almacenados (3ª ev.)
+├── docs/                  # arquitectura_CAP.md + tercera_evaluacion.md + guion_demo.md
 └── CLAUDE.md              # arquitectura, plan de etapas y convenciones
 ```
 

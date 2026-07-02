@@ -137,8 +137,16 @@
 > son probables end-to-end (login con `admin/admin123`). Los guards de rol
 > aplican: `admin` pasa siempre; `vendedor`/`bodeguero` según la ruta.
 
-### BLOQUE F — Frontend React (para la demo en vivo) ✅ COMPLETADO
+### BLOQUE F — Frontend (para la demo en vivo) ✅ COMPLETADO
 *No lo pide explícitamente la rúbrica, pero la "Defensa y Demo" lo necesita.*
+
+> ⚠️ **Consolidado (2026-07-01):** el frontend React de `frontend/` fue
+> **retirado**. El único frontend es la **consola PHP + AJAX** de `src/ui/`
+> (entregable evaluado), que ahora **incluye la vitrina pública** del comprador
+> (`tienda.php` + `producto.php`, sin login) además de la consola interna.
+> Motivo: un solo origen (`:8080`), sin Node/npm, 100% alineado con "PHP + AJAX".
+> Las tareas F1–F7 de abajo describen el estado histórico (React); su
+> equivalente vive hoy en `src/ui/`.
 
 - [x] **F1. Setup** — Vite + React 18 + Tailwind v3 + axios + react-router-dom
   en `frontend/`. `axios` con `withCredentials: true`.
@@ -200,3 +208,34 @@
    **exactamente** como dice el documento ante una partición.
 3. **Que compile y corra en la demo (Bloque G)** — "no se presentan o no
    ejecuta" es la nota más baja de la rúbrica.
+
+---
+
+## Tercera Evaluación (SD 2026) — estado
+
+> Evolución sobre la base anterior. Doc técnico: `docs/tercera_evaluacion.md`.
+
+- [x] **Procedimientos almacenados** (`sql/*/03_objetos.sql`): `sp_realizar_compra`
+  (leg sucursal, anti-sobreventa), `sp_registrar_venta` / `sp_agregar_detalle_venta`
+  (central), `sp_actualizar_stock` (ajuste), `sp_reponer_stock` (compra),
+  `sp_reconstruir_stock` (recuperación). `VentaController` ejecuta el 2PC vía SP.
+- [x] **Transacciones distribuidas con SP** — venta = `CALL sp_registrar_venta` +
+  `CALL sp_realizar_compra` dentro del mismo BEGIN por nodo (rollback en ambos).
+- [x] **Falla simulada de nodo** — tabla `estado_nodos` + guard en `Database`;
+  `NodoAdminController` (`GET /nodos`, `POST /nodos/:nodo/estado`,
+  `POST /nodos/:nodo/recuperar`). OFFLINE → 503 controlado.
+- [x] **Recuperación** — `sp_reconstruir_stock` reconstruye desde el libro de
+  movimientos; informe antes/reconstruido/Δ.
+- [x] **Consola PHP + AJAX** — `src/ui/*.php` + `assets/app.js` (fetch, mismo
+  origen), servida en `http://localhost:8080/ui/`. Páginas: panel, ventas,
+  compras, stock, CRUD, nodos, simulador.
+- [x] **Pruebas** — `tests/e2e/api.sh` amplía: venta vía SP, nodo OFFLINE → 503,
+  recuperación → sincronizado, sobreventa, CAP. `tests/unit` cubre el mapeo
+  nodo↔id_suc.
+- [x] **Documentación** — `docs/tercera_evaluacion.md`, README, guion (Addendum F).
+
+### Verificación pendiente (requiere Docker; no disponible en el entorno de edición)
+- [ ] `docker compose down -v && docker compose up -d --build` para cargar los
+  `03_objetos.sql` en un `initdb` limpio.
+- [ ] `bash tests/run.sh` en verde (unit + e2e ampliado).
+- [ ] Abrir `http://localhost:8080/ui/` y recorrer el flujo de la §F del guion.
