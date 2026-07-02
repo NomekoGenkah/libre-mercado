@@ -209,16 +209,85 @@
   }
 
   // ----------------------------------------------------------- imágenes
-  // Ruta local de la imagen del producto (assets/productos/<id>.jpg). Si el
-  // archivo no existe, imgProducto cae de forma elegante a un placeholder.
-  function imagenProducto(idProd) { return 'assets/productos/' + idProd + '.jpg'; }
-  function imgProducto(idProd, alt) {
-    const a = esc(alt || 'Producto');
-    return '<img class="prod-img" src="' + imagenProducto(idProd) + '" alt="' + a + '"' +
-      ' loading="lazy" onerror="LM.imgFallback(this)">';
+  // assets/productos/<id>[_<n>].(jpg|webp|png|jpeg). Las funciones
+  // tryNextExt/tryHideExt/galleryExt encadenan extensiones si el archivo no
+  // existe. imgGaleria genera thumbs dinámicos (hasta 10) y los que no tengan
+  // imagen se ocultan automáticamente.
+  function imagenProducto(idProd, idx) {
+    const n = idx != null ? '_' + idx : '';
+    return 'assets/productos/' + idProd + n;
   }
-  // Reemplaza una imagen que no cargó (archivo ausente/sin red) por un
-  // placeholder geométrico, sin romper el layout de la card.
+
+  function imgProducto(idProd, alt, idx) {
+    const a = esc(alt || 'Producto');
+    const base = imagenProducto(idProd, idx);
+    return '<img class="prod-img" src="' + base + '.jpg" alt="' + a + '"' +
+      ' loading="lazy" onerror="LM.tryNextExt(this,\'' + base + '\')">';
+  }
+
+  function tryNextExt(el, base, i) {
+    const exts = ['jpg', 'webp', 'png', 'jpeg'];
+    i = i || 1;
+    if (i >= exts.length) { LM.imgFallback(el); return; }
+    el.src = base + '.' + exts[i];
+    el.onerror = function () { LM.tryNextExt(el, base, i + 1); };
+  }
+
+  // Para thumbs de galería: oculta el botón si no carga ninguna extensión.
+  function tryHideExt(el, base, i) {
+    const exts = ['jpg', 'webp', 'png', 'jpeg'];
+    i = i || 1;
+    if (i >= exts.length) { var p = el.parentNode; if (p) p.style.display = 'none'; return; }
+    el.src = base + '.' + exts[i];
+    el.onerror = function () { LM.tryHideExt(el, base, i + 1); };
+  }
+
+  // Para imagen principal de galería: nunca reemplaza el <img> (evita que
+  // switchGalleryImg pierda la referencia si ningún slot tiene imagen).
+  function galleryExt(el, base, i) {
+    const exts = ['jpg', 'webp', 'png', 'jpeg'];
+    i = i || 1;
+    if (i >= exts.length) return;
+    el.onerror = function () { LM.galleryExt(el, base, i + 1); };
+    el.src = base + '.' + exts[i];
+  }
+
+  function imgGaleria(idProd, alt) {
+    const a = esc(alt || 'Producto');
+    const mainId = 'galleryImg-' + idProd;
+    var thumbs = '';
+    for (var i = 0; i <= 9; i++) {
+      var b = i === 0 ? 'assets/productos/' + idProd : 'assets/productos/' + idProd + '_' + i;
+      var active = i === 0 ? ' on' : '';
+      thumbs += '<button class="gallery-thumb' + active + '" type="button" ' +
+        'data-base="' + b + '" ' +
+        'onclick="LM.switchGalleryImg(\'' + mainId + '\',this)">' +
+        '<img src="' + b + '.jpg" alt="" loading="lazy"' +
+        ' onerror="LM.tryHideExt(this,\'' + b + '\')"></button>';
+    }
+    var firstBase = 'assets/productos/' + idProd;
+    return '<div class="gallery" id="gallery-' + idProd + '">' +
+      '<div class="gallery-main">' +
+        '<img class="prod-img gallery-img" src="' + firstBase + '.jpg" alt="' + a + '"' +
+        ' loading="lazy" id="' + mainId + '"' +
+        ' onerror="LM.galleryExt(this,\'' + firstBase + '\')">' +
+      '</div>' +
+      '<div class="gallery-thumbs">' + thumbs + '</div></div>';
+  }
+
+  function switchGalleryImg(imgId, btn) {
+    var img = document.getElementById(imgId);
+    var base = btn.getAttribute('data-base');
+    if (!img || !base || img.tagName !== 'IMG') return;
+    img.src = base + '.jpg';
+    img.onerror = function () { LM.galleryExt(img, base); };
+    var thumbs = btn.parentNode;
+    if (thumbs) {
+      [].forEach.call(thumbs.children, function (c) { c.classList.remove('on'); });
+    }
+    btn.classList.add('on');
+  }
+
   function imgFallback(el) {
     const d = document.createElement('div');
     d.className = 'prod-fallback';
@@ -231,6 +300,6 @@
   window.LM = {
     api, ApiError, money, num, folio, fechaHora, nombreNodo, esc, toast,
     abrirModal, cerrarModal, valores, guard, tieneRol, logout, loading, vacio, page,
-    pagePublica, streamNodos, imagenProducto, imgProducto, imgFallback, renderTopo, user: null,
+    pagePublica, streamNodos, imagenProducto, imgProducto, tryNextExt, tryHideExt, galleryExt, imgGaleria, switchGalleryImg, imgFallback, renderTopo, user: null,
   };
 })();

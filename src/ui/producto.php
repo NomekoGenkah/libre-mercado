@@ -20,7 +20,7 @@ LM.pagePublica(async function () {
   const agotado = !!p.agotado;
   cont.className = 'ficha';
   cont.innerHTML =
-    '<div class="ficha-media">' + LM.imgProducto(p.id_prod, p.producto) + '</div>' +
+    '<div class="ficha-media">' + LM.imgGaleria(p.id_prod, p.producto) + '</div>' +
     '<div class="ficha-info">' +
       (p.categoria ? '<span class="chip neutral">' + LM.esc(p.categoria) + '</span>' : '') +
       '<h1 class="ficha-name">' + LM.esc(p.producto) + '</h1>' +
