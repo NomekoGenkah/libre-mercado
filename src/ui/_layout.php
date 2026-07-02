@@ -6,6 +6,19 @@
 //  Las páginas son PHP servido por Apache; TODA la data llega por AJAX.
 // ===========================================================================
 
+// Marca: figura geométrica (hexágono con gradiente violeta y núcleo recortado).
+// Reemplaza el antiguo tile "LM". Reutilizable en sidebar, header público y login.
+function ui_logo(): string
+{
+    return '<svg class="logo-mark" viewBox="0 0 32 32" role="img" aria-label="Libre Mercado">'
+        . '<defs><linearGradient id="lm-grad" x1="0" y1="0" x2="1" y2="1">'
+        . '<stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#a78bfa"/>'
+        . '</linearGradient></defs>'
+        . '<path d="M16 1.6 L28.5 8.8 L28.5 23.2 L16 30.4 L3.5 23.2 L3.5 8.8 Z" fill="url(#lm-grad)"/>'
+        . '<path d="M16 9.2 L22.7 13.1 L22.7 20.9 L16 24.8 L9.3 20.9 L9.3 13.1 Z" fill="#0b0b12" fill-opacity="0.55"/>'
+        . '</svg>';
+}
+
 function ui_nav(): array
 {
     // grupo => [ [clave, etiqueta, archivo, icono, rol|null], ... ]
@@ -47,7 +60,7 @@ function ui_head(string $active, string $title, string $subtitle = ''): void
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <span class="logo">LM</span>
+      <?= ui_logo() ?>
       <div><b>Libre Mercado</b><small>Consola SD</small></div>
     </div>
     <nav class="nav">
@@ -111,7 +124,7 @@ function ui_head_publico(string $title, string $subtitle = ''): void
   <header class="pub-head">
     <div class="pub-wrap">
       <a class="pub-brand" href="tienda.php">
-        <span class="logo">LM</span>
+        <?= ui_logo() ?>
         <div><b>Libre Mercado</b><small>Tienda en línea</small></div>
       </a>
       <a class="btn ghost" href="login.php">Ingresar</a>

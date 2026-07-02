@@ -186,6 +186,21 @@
     });
   }
 
+  // Estado de nodos EN VIVO por SSE (GET /nodos/stream). Llama a onNodos con
+  // el arreglo de nodos en cada actualización. Si el navegador no soporta
+  // EventSource, cae a polling cada 3 s. Devuelve { close() }.
+  function streamNodos(onNodos) {
+    if (typeof EventSource === 'undefined') {
+      const t = setInterval(async () => {
+        try { onNodos((await api.get('/nodos')).nodos); } catch (e) { /* nodo/red caído */ }
+      }, 3000);
+      return { close: () => clearInterval(t) };
+    }
+    const es = new EventSource('/nodos/stream');
+    es.onmessage = (e) => { try { onNodos(JSON.parse(e.data).nodos); } catch (_) {} };
+    return { close: () => es.close() };
+  }
+
   // Arranque de página PÚBLICA (vitrina del comprador): sin guard, sin sesión.
   function pagePublica(initFn) {
     document.addEventListener('DOMContentLoaded', async function () {
@@ -216,6 +231,6 @@
   window.LM = {
     api, ApiError, money, num, folio, fechaHora, nombreNodo, esc, toast,
     abrirModal, cerrarModal, valores, guard, tieneRol, logout, loading, vacio, page,
-    pagePublica, imagenProducto, imgProducto, imgFallback, renderTopo, user: null,
+    pagePublica, streamNodos, imagenProducto, imgProducto, imgFallback, renderTopo, user: null,
   };
 })();

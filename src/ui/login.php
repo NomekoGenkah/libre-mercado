@@ -1,4 +1,4 @@
-<?php header('Content-Type: text/html; charset=utf-8'); ?><!doctype html>
+<?php require __DIR__ . '/_layout.php'; header('Content-Type: text/html; charset=utf-8'); ?><!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -12,7 +12,7 @@
 <div class="login-wrap">
   <form class="login-card" id="form">
     <div class="brand">
-      <span class="logo">LM</span>
+      <?= ui_logo() ?>
       <div><b>Libre Mercado</b><small>Consola SD · PHP + AJAX</small></div>
     </div>
     <div class="field">

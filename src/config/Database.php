@@ -184,6 +184,17 @@ class Database
         return (self::estadoNodos()[$nodo] ?? 'online') === 'offline';
     }
 
+    /**
+     * Olvida las conexiones PDO y el estado cacheados. Necesario en bucles
+     * largos (el stream SSE de nodos) para releer reachability/estado frescos
+     * en cada iteración en vez de reusar el cache del inicio del request.
+     */
+    public static function olvidarCaches(): void
+    {
+        self::$conexiones = [];
+        self::$estados = null;
+    }
+
     /** Marca un nodo como 'online'|'offline' e invalida el cache del request. */
     public static function marcarEstadoNodo(string $nodo, string $estado): void
     {

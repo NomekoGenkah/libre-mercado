@@ -23,20 +23,48 @@ class NodoAdminController
      */
     public function listar(array $params, array $body): void
     {
+        Response::exito(['nodos' => $this->snapshot()]);
+    }
+
+    /**
+     * GET /nodos/stream — Server-Sent Events: empuja el estado de los nodos
+     * cada 2 s para el dashboard "en vivo". Sin frameworks: sólo cabeceras SSE
+     * y un bucle que escribe y hace flush. El navegador usa EventSource, que
+     * reconecta solo cuando el bucle termina.
+     */
+    public function stream(array $params, array $body): void
+    {
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        header('X-Accel-Buffering: no');   // no bufferizar detrás de proxies
+        session_write_close();             // soltar la sesión: no bloquear otras peticiones
+        while (ob_get_level()) { ob_end_flush(); }
+
+        // Máx ~5 min por conexión; EventSource reconecta al cerrarse.
+        for ($i = 0; $i < 150 && !connection_aborted(); $i++) {
+            Database::olvidarCaches();     // relee estado/reachability frescos
+            echo 'data: ' . json_encode(['nodos' => $this->snapshot()]) . "\n\n";
+            flush();
+            sleep(2);
+        }
+    }
+
+    /** Estado de los 4 nodos: flag configurado + reachability real (ping). */
+    private function snapshot(): array
+    {
         $flags = Database::estadoNodos();   // nodo => 'online'|'offline'
         $nodos = [];
         foreach (Config::nodos() as $clave) {
-            $estado = $flags[$clave] ?? 'online';
             $nodos[] = [
                 'nodo'        => $clave,
                 'rol'         => $clave === 'central' ? 'coordinador' : 'sucursal',
                 'id_suc'      => $clave === 'central' ? null : Database::idSucursalPorNodo($clave),
-                'estado'      => $estado,                 // flag (falla simulada)
-                'alcanzable'  => Database::pingNodo($clave), // contenedor arriba
+                'estado'      => $flags[$clave] ?? 'online',  // flag (falla simulada)
+                'alcanzable'  => Database::pingNodo($clave),  // contenedor arriba
                 'simulable'   => in_array($clave, self::SUCURSALES, true),
             ];
         }
-        Response::exito(['nodos' => $nodos]);
+        return $nodos;
     }
 
     /**

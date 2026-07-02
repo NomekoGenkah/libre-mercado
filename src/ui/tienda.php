@@ -6,6 +6,13 @@
   <p>Explora el catálogo y revisa la disponibilidad en tiempo real. Sin registrarte.</p>
 </section>
 
+<section class="showcase" id="showcase" hidden>
+  <div class="showcase-track" id="showcaseTrack"></div>
+  <button class="showcase-nav prev" id="showcasePrev" type="button" aria-label="Anterior">‹</button>
+  <button class="showcase-nav next" id="showcaseNext" type="button" aria-label="Siguiente">›</button>
+  <div class="showcase-dots" id="showcaseDots"></div>
+</section>
+
 <div class="shop-tools">
   <label class="search">
     <span class="search-ico">◎</span>
@@ -37,7 +44,9 @@ LM.pagePublica(async function () {
       '<div class="aviso-parcial">Algunas sucursales no respondieron; la disponibilidad puede ser parcial.</div>';
   }
 
-  // Categorías presentes (para los filtros).
+  montarShowcase(productos.filter((p) => !p.agotado).slice(0, 6));
+
+  // ---- Grilla + filtros -------------------------------------------------
   const cats = [...new Set(productos.map((p) => p.categoria).filter(Boolean))].sort();
   let q = '';
   let cat = null;
@@ -86,6 +95,58 @@ LM.pagePublica(async function () {
 
   inputQ.addEventListener('input', function () { q = inputQ.value; render(); });
   render();
+
+  // ---- Slider de destacados --------------------------------------------
+  function montarShowcase(destacados) {
+    if (destacados.length < 2) return; // sin slider si no hay suficientes
+    const cont = document.getElementById('showcase');
+    const track = document.getElementById('showcaseTrack');
+    const dots = document.getElementById('showcaseDots');
+    cont.hidden = false;
+
+    track.innerHTML = destacados.map((p) =>
+      '<article class="slide">' +
+        '<div class="slide-media">' + LM.imgProducto(p.id_prod, p.producto) + '</div>' +
+        '<div class="slide-info">' +
+          (p.categoria ? '<span class="kicker">' + LM.esc(p.categoria) + '</span>' : '') +
+          '<h2>' + LM.esc(p.producto) + '</h2>' +
+          '<div class="slide-price">' + LM.money(p.precio) + '</div>' +
+          '<a class="btn primary" href="producto.php?id=' + p.id_prod + '">Ver producto</a>' +
+        '</div>' +
+      '</article>'
+    ).join('');
+
+    dots.innerHTML = destacados.map((_, i) =>
+      '<button type="button" class="' + (i === 0 ? 'on' : '') + '" aria-label="Ir al destacado ' + (i + 1) + '"></button>'
+    ).join('');
+
+    let i = 0;
+    const total = destacados.length;
+    const botones = [...dots.children];
+    function ir(n) {
+      i = (n + total) % total;
+      track.style.transform = 'translateX(-' + (i * 100) + '%)';
+      botones.forEach((b, k) => b.classList.toggle('on', k === i));
+    }
+    botones.forEach((b, k) => b.addEventListener('click', () => { ir(k); reiniciar(); }));
+    document.getElementById('showcasePrev').addEventListener('click', () => { ir(i - 1); reiniciar(); });
+    document.getElementById('showcaseNext').addEventListener('click', () => { ir(i + 1); reiniciar(); });
+
+    // Autoplay (pausa al pasar el ratón / pestaña oculta / reduce-motion).
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let timer = null;
+    function reiniciar() {
+      if (timer) clearInterval(timer);
+      if (reduce) return;
+      timer = setInterval(() => ir(i + 1), 5000);
+    }
+    cont.addEventListener('mouseenter', () => { if (timer) clearInterval(timer); });
+    cont.addEventListener('mouseleave', reiniciar);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { if (timer) clearInterval(timer); } else { reiniciar(); }
+    });
+    reiniciar();
+  }
 });
 </script>
 

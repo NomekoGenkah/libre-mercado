@@ -9,7 +9,7 @@
 
 <div class="grid cols-2" style="margin-top:16px">
   <div class="panel">
-    <div class="head"><h3>Topología de la red</h3><span class="kicker" style="margin-left:auto">central + 3 sucursales</span></div>
+    <div class="head"><h3>Topología de la red</h3><span class="chip ok" style="margin-left:auto"><span class="dot"></span>en vivo</span></div>
     <div class="body" id="topo"><div class="empty">Cargando nodos…</div></div>
   </div>
   <div class="panel">
@@ -31,21 +31,10 @@ LM.page(async function () {
   const ingresos = ventas.reduce((a, v) => a + Number(v.total || 0), 0);
   document.getElementById('k-ing').textContent = LM.money(ingresos);
 
-  // Topología: /nodos (estado + reachability). Si no hay permiso, cae a /salud.
+  // Topología EN VIVO: se actualiza sola por SSE (GET /nodos/stream). Al caer
+  // o recuperarse un nodo, el diagrama cambia sin refrescar la página.
   const topo = document.getElementById('topo');
-  try {
-    const r = await LM.api.get('/nodos');
-    LM.renderTopo(topo, r.nodos);
-  } catch (e) {
-    try {
-      const s = await LM.api.get('/salud');
-      const nodos = Object.entries(s.nodos || {}).map(([nodo, est]) => ({
-        nodo, rol: nodo === 'central' ? 'coordinador' : 'sucursal',
-        estado: 'online', alcanzable: est === 'ok',
-      }));
-      LM.renderTopo(topo, nodos);
-    } catch (e2) { LM.vacio(topo, 'No se pudo leer el estado de los nodos.'); }
-  }
+  LM.streamNodos((nodos) => LM.renderTopo(topo, nodos));
 
   // Ranking
   const rk = document.getElementById('ranking');
