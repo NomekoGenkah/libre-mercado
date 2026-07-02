@@ -186,10 +186,36 @@
     });
   }
 
+  // Arranque de página PÚBLICA (vitrina del comprador): sin guard, sin sesión.
+  function pagePublica(initFn) {
+    document.addEventListener('DOMContentLoaded', async function () {
+      try { await initFn(); } catch (e) { toast(e.message || 'Error inesperado', 'error'); }
+    });
+  }
+
+  // ----------------------------------------------------------- imágenes
+  // Ruta local de la imagen del producto (assets/productos/<id>.jpg). Si el
+  // archivo no existe, imgProducto cae de forma elegante a un placeholder.
+  function imagenProducto(idProd) { return 'assets/productos/' + idProd + '.jpg'; }
+  function imgProducto(idProd, alt) {
+    const a = esc(alt || 'Producto');
+    return '<img class="prod-img" src="' + imagenProducto(idProd) + '" alt="' + a + '"' +
+      ' loading="lazy" onerror="LM.imgFallback(this)">';
+  }
+  // Reemplaza una imagen que no cargó (archivo ausente/sin red) por un
+  // placeholder geométrico, sin romper el layout de la card.
+  function imgFallback(el) {
+    const d = document.createElement('div');
+    d.className = 'prod-fallback';
+    d.setAttribute('aria-hidden', 'true');
+    d.textContent = '◭';
+    if (el && el.parentNode) el.parentNode.replaceChild(d, el);
+  }
+
   // exportar
   window.LM = {
     api, ApiError, money, num, folio, fechaHora, nombreNodo, esc, toast,
     abrirModal, cerrarModal, valores, guard, tieneRol, logout, loading, vacio, page,
-    renderTopo, user: null,
+    pagePublica, imagenProducto, imgProducto, imgFallback, renderTopo, user: null,
   };
 })();

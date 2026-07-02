@@ -1,3 +1,4 @@
-# La consola PHP + AJAX se sirve como archivos reales (no pasa por el front
-# controller de la API). Al entrar a /ui/ se usa index.php (redirige al panel).
+# El frontend PHP + AJAX se sirve como archivos reales (no pasa por el front
+# controller de la API). Al entrar a /ui/ se usa index.php, que redirige a la
+# vitrina pública (tienda.php); la consola interna se entra por "Ingresar".
 DirectoryIndex index.php

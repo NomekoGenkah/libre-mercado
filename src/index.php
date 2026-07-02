@@ -4,7 +4,7 @@
 //  Front controller único: TODA petición a la API entra por aquí (vía
 //  .htaccess). Responsabilidades:
 //    1. Autoloader de clases (config / helpers / middleware / controllers).
-//    2. CORS para el frontend Vite (con credenciales = sesiones).
+//    2. CORS (solo si se consume desde otro origen; la consola es mismo origen).
 //    3. Sesión PHP.
 //    4. Parseo del body JSON.
 //    5. Manejo global de excepciones -> respuesta JSON consistente.
@@ -42,8 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // --- 3. Sesión PHP ---------------------------------------------------------
-//  SameSite=Lax basta: front (localhost:5173) y back (localhost:8080) son
-//  same-site (mismo dominio registrable 'localhost'), distinto puerto.
+//  SameSite=Lax basta: la consola PHP+AJAX y la API son mismo origen (:8080).
 session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',

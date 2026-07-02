@@ -6,7 +6,7 @@
 <title>Ingreso · Libre Mercado</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
-<script src="assets/app.js" defer></script>
+<script src="assets/app.js"></script>
 </head>
 <body>
 <div class="login-wrap">

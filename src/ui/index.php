@@ -1,4 +1,5 @@
 <?php
-// Entrada de la consola: redirige al panel (el guard AJAX exige sesión).
-header('Location: dashboard.php');
+// Puerta de entrada pública: la vitrina del comprador (sin sesión).
+// El equipo entra por "Ingresar" → login.php → consola interna (dashboard).
+header('Location: tienda.php');
 exit;

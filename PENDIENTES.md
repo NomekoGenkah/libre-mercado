@@ -137,8 +137,16 @@
 > son probables end-to-end (login con `admin/admin123`). Los guards de rol
 > aplican: `admin` pasa siempre; `vendedor`/`bodeguero` según la ruta.
 
-### BLOQUE F — Frontend React (para la demo en vivo) ✅ COMPLETADO
+### BLOQUE F — Frontend (para la demo en vivo) ✅ COMPLETADO
 *No lo pide explícitamente la rúbrica, pero la "Defensa y Demo" lo necesita.*
+
+> ⚠️ **Consolidado (2026-07-01):** el frontend React de `frontend/` fue
+> **retirado**. El único frontend es la **consola PHP + AJAX** de `src/ui/`
+> (entregable evaluado), que ahora **incluye la vitrina pública** del comprador
+> (`tienda.php` + `producto.php`, sin login) además de la consola interna.
+> Motivo: un solo origen (`:8080`), sin Node/npm, 100% alineado con "PHP + AJAX".
+> Las tareas F1–F7 de abajo describen el estado histórico (React); su
+> equivalente vive hoy en `src/ui/`.
 
 - [x] **F1. Setup** — Vite + React 18 + Tailwind v3 + axios + react-router-dom
   en `frontend/`. `axios` con `withCredentials: true`.

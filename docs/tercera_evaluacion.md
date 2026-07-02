@@ -178,9 +178,14 @@ Ejecutar: `bash tests/run.sh` (unit + e2e, requiere el stack levantado).
 - **Frontend:** **consola PHP + AJAX** en `src/ui/` (servida por el mismo
   `app_php`, mismo origen `:8080`). Las páginas son PHP renderizado en el
   servidor; **toda la data se pide por AJAX** (`fetch`, `credentials:'include'`)
-  contra la API JSON. Sin frameworks. Incluye: panel, ventas, compras, stock,
-  CRUD (productos/clientes/proveedores/usuarios), **nodos** (simular falla +
-  recuperar) y **simulador CAP**. Se abre en `http://localhost:8080/ui/`.
+  contra la API JSON. Sin frameworks ni Node/npm. Tiene **dos mundos**:
+  - **Vitrina pública** (`tienda.php`, `producto.php`) — el catálogo del
+    comprador **sin sesión**, que consume el endpoint público `GET /catalogo`.
+    Es la puerta de entrada (`/ui/`); ningún detalle de la infraestructura
+    distribuida asoma aquí.
+  - **Consola interna** (con login + roles) — panel, ventas, compras, stock,
+    CRUD (productos/clientes/proveedores/usuarios), **nodos** (simular falla +
+    recuperar) y **simulador CAP**. Se entra por **"Ingresar"**.
 
 ---
 

@@ -12,19 +12,19 @@ function ui_nav(): array
     return [
         'Operación' => [
             ['dashboard',   'Panel',       'dashboard.php',   '◧', null],
-            ['ventas',      'Ventas',      'ventas.php',      '🧾', null],
-            ['compras',     'Compras',     'compras.php',     '📥', null],
+            ['ventas',      'Ventas',      'ventas.php',      '▦', null],
+            ['compras',     'Compras',     'compras.php',     '▽', null],
             ['stock',       'Stock',       'stock.php',       '▤', null],
         ],
         'Catálogo' => [
-            ['productos',   'Productos',   'productos.php',   '📦', null],
-            ['clientes',    'Clientes',    'clientes.php',    '👤', null],
-            ['proveedores', 'Proveedores', 'proveedores.php', '🏭', null],
+            ['productos',   'Productos',   'productos.php',   '▣', null],
+            ['clientes',    'Clientes',    'clientes.php',    '◍', null],
+            ['proveedores', 'Proveedores', 'proveedores.php', '⊞', null],
         ],
         'Sistema distribuido' => [
             ['nodos',       'Nodos de la red', 'nodos.php',    '⬡', 'admin'],
-            ['simulador',   'Simulador CAP',   'simulador.php', '⚡', 'admin'],
-            ['usuarios',    'Usuarios',        'usuarios.php',  '🔑', 'admin'],
+            ['simulador',   'Simulador CAP',   'simulador.php', '△', 'admin'],
+            ['usuarios',    'Usuarios',        'usuarios.php',  '◆', 'admin'],
         ],
     ];
 }
@@ -41,7 +41,7 @@ function ui_head(string $active, string $title, string $subtitle = ''): void
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
-<script src="assets/app.js" defer></script>
+<script src="assets/app.js"></script>
 </head>
 <body>
 <div class="app">
@@ -82,6 +82,55 @@ function ui_foot(): void
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
+</body>
+</html>
+<?php
+}
+
+// ===========================================================================
+//  Marco de la TIENDA PÚBLICA (mundo del comprador, SIN sesión).
+//  Sin barra lateral ni indicadores de infraestructura: nada de la naturaleza
+//  distribuida asoma aquí; eso vive en la consola interna. Cabecera con la
+//  marca y un acceso discreto al equipo ("Ingresar").
+// ===========================================================================
+function ui_head_publico(string $title, string $subtitle = ''): void
+{
+    header('Content-Type: text/html; charset=utf-8');
+    ?><!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?= htmlspecialchars($title) ?> · Libre Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="assets/app.js"></script>
+</head>
+<body class="pub">
+  <header class="pub-head">
+    <div class="pub-wrap">
+      <a class="pub-brand" href="tienda.php">
+        <span class="logo">LM</span>
+        <div><b>Libre Mercado</b><small>Tienda en línea</small></div>
+      </a>
+      <a class="btn ghost" href="login.php">Ingresar</a>
+    </div>
+  </header>
+  <main class="pub-main"><div class="pub-wrap">
+<?php
+}
+
+function ui_foot_publico(): void
+{
+    ?>
+  </div></main>
+  <footer class="pub-foot">
+    <div class="pub-wrap">
+      <span>Libre Mercado · catálogo en línea.</span>
+      <span>¿Eres del equipo? <a href="login.php">Ingresa a la consola</a>.</span>
+    </div>
+  </footer>
 </body>
 </html>
 <?php

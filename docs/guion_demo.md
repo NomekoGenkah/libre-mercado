@@ -74,7 +74,7 @@ la haces con `docker stop nodo_sucursal_este` localmente.
 **Stack y app:**
 - [ ] `docker compose ps` → 5 contenedores `Up`/`healthy`.
 - [ ] `curl http://localhost:8080/salud` → los 4 nodos en `ok` (incl. Este remoto). **Este es el semáforo maestro.**
-- [ ] Frontend corriendo: `cd frontend && npm run dev` → `localhost:5173`.
+- [ ] Frontend disponible en `http://localhost:8080/ui/` (lo sirve `app_php`, sin Node).
 - [ ] Navegador con sesión **admin** ya iniciada, en el **Dashboard**.
 
 **Prueba en seco (segura, no ensucia datos):**
@@ -243,10 +243,10 @@ pkill socat ; docker compose up -d
 
 ## F. Addendum — Tercera Evaluación (procedimientos, falla simulada, PHP+AJAX)
 
-> Doc técnico: `docs/tercera_evaluacion.md`. La consola evaluada aquí es la de
-> **PHP + AJAX** en **`http://localhost:8080/ui/`** (login `admin`/`admin123`),
-> servida por el mismo `app_php`. El frontend React sigue disponible pero no es
-> el entregable de esta evaluación.
+> Doc técnico: `docs/tercera_evaluacion.md`. El frontend evaluado es la consola
+> **PHP + AJAX** en **`http://localhost:8080/ui/`**, servida por el mismo
+> `app_php`. `/ui/` abre en la **vitrina pública** (comprador, sin login); la
+> **consola interna** (login `admin`/`admin123`) se entra por **"Ingresar"**.
 
 ### F.1 Procedimientos almacenados (≈1:00)
 **Decir:** "La venta distribuida ahora se ejecuta con **procedimientos

@@ -150,7 +150,8 @@ services:
       # Puerto del nodo Este (por defecto 3306; en la demo distribuida apunta
       # al forward host:33060 que cruza a Tailscale).
       ESTE_PORT: ${ESTE_PORT:-3306}
-      # CORS para el frontend Vite
+      # CORS: solo necesario si se consume la API desde OTRO origen. La consola
+      # PHP+AJAX es mismo origen (:8080) y no lo requiere.
       CORS_ORIGIN: ${CORS_ORIGIN}
     networks:
       - red_distribuida

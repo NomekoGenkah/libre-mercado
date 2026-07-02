@@ -10,8 +10,9 @@ Simula un entorno de alta disponibilidad con múltiples nodos de base de datos
 distribuidos (LAN Docker) y backend en **PHP puro + PDO**. La arquitectura es
 **CP** (Consistencia + Tolerancia a Particiones): ante la caída —real o
 simulada— de un nodo de sucursal, las ventas hacen rollback antes que permitir
-sobreventa. Hay **dos frontends**: la consola **PHP + AJAX** en `src/ui/`
-(entregable de la 3ª ev.) y una consola **React + Vite** en `frontend/`.
+sobreventa. El frontend es una única consola **PHP + AJAX** en `src/ui/` (mismo
+origen que la API) con **dos mundos**: la **vitrina pública** del comprador
+(sin login) y la **consola interna** de operaciones (con sesión y roles).
 
 > 📐 La arquitectura completa, el plan de etapas y las convenciones de código
 > están documentados en [`CLAUDE.md`](./CLAUDE.md).
@@ -29,8 +30,8 @@ Red Docker `red_distribuida` (bridge) con 5 contenedores:
 | `app_php` | Apache + PHP 8.2 — API REST **+ consola PHP/AJAX (`/ui`)** | `8080` |
 
 La consola **PHP + AJAX** se sirve desde el propio `app_php` en
-`http://localhost:8080/ui/` (mismo origen que la API). El frontend **React**
-opcional corre fuera de Docker en `localhost:5173` (Vite).
+`http://localhost:8080/ui/` (mismo origen que la API). No hay dependencias de
+Node/npm: todo el frontend lo sirve `app_php`.
 
 ## Estado del proyecto
 
@@ -40,7 +41,7 @@ opcional corre fuera de Docker en `localhost:5173` (Vite).
 - ✅ CRUD de todas las entidades (borrado lógico)
 - ✅ Transacciones ACID: venta distribuida 2PC + reabastecimiento local
 - ✅ Simulación de fallo CAP (`/debug/simular-fallo`) + [documento CAP](./docs/arquitectura_CAP.md)
-- ✅ Autenticación con sesiones PHP + roles · Frontend React ([`frontend/`](./frontend/README.md))
+- ✅ Autenticación con sesiones PHP + roles
 
 **3ª evaluación** — completa y verificada (ver [`docs/tercera_evaluacion.md`](./docs/tercera_evaluacion.md)):
 
@@ -64,8 +65,7 @@ Ver el desglose completo en [`CLAUDE.md`](./CLAUDE.md).
 
 ## Requisitos
 
-- Docker + Docker Compose v2
-- (Para el frontend, más adelante) Node.js 18+
+- Docker + Docker Compose v2 (única dependencia; el frontend PHP lo sirve `app_php`)
 
 ## Puesta en marcha (Etapa 1)
 
@@ -133,15 +133,18 @@ Documento técnico completo: [`docs/tercera_evaluacion.md`](./docs/tercera_evalu
 > Si actualizas desde una base ya creada, recrea los volúmenes para que se
 > carguen: `docker compose down -v && docker compose up -d --build`.
 
-### Consola PHP + AJAX
+### Frontend PHP + AJAX
 
-Abre **`http://localhost:8080/ui/`** en el navegador (login: `admin` /
-`admin123`). Es un frontend en **PHP renderizado en el servidor** cuyas páginas
-piden **toda la data por AJAX** (`fetch`) a la API JSON. Incluye panel, ventas,
-compras, stock, CRUD, **Nodos** (simular falla + recuperar) y **Simulador CAP**.
+Abre **`http://localhost:8080/ui/`** en el navegador. Es un frontend en **PHP
+renderizado en el servidor** cuyas páginas piden **toda la data por AJAX**
+(`fetch`) a la API JSON, en el mismo origen. Tiene **dos mundos**:
 
-> El frontend React de `frontend/` sigue disponible como alternativa; la consola
-> **evaluada** en la Tercera es la de `src/ui/` (PHP + AJAX).
+- **Vitrina pública** (`tienda.php`, `producto.php`) — el catálogo que ve un
+  comprador **sin sesión**: búsqueda, filtros por categoría, disponibilidad
+  agregada y ficha de producto. Es la puerta de entrada (`/ui/`).
+- **Consola interna** — con login (`admin` / `admin123`) y roles: panel, ventas,
+  compras, stock, CRUD, **Nodos** (simular falla + recuperar) y **Simulador CAP**.
+  Se entra por el botón **"Ingresar"**.
 
 ## Pruebas
 
@@ -194,7 +197,8 @@ docker compose down -v                # detener y borrar volúmenes de datos
 │   ├── middleware/        # AuthMiddleware (guards de sesión/rol)
 │   ├── controllers/       # Auth, Producto, Cliente, Usuario, Proveedor, Sucursal,
 │   │                      #   Stock, Carrito, Venta, Compra, Reporte, NodoAdmin, Debug
-│   └── ui/                # consola PHP + AJAX (login, panel, nodos, simulador…)
+│   └── ui/                # frontend PHP + AJAX: vitrina pública (tienda/producto)
+│                          #   + consola interna (login, panel, nodos, simulador…)
 │       └── assets/        #   app.js (motor fetch) + styles.css
 ├── tests/                 # pruebas (montado en app_php:/var/www/tests)
 │   ├── run.sh             # un comando: unit + e2e
