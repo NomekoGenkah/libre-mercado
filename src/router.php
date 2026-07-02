@@ -193,6 +193,14 @@ function crearRouter(): Router
     // --- Movimientos de stock ----------------------------------------------
     $r->agregar('GET', '/movimientos/:id_suc', 'StockController@movimientos', ['auth' => true]);
 
+    // --- Reportes (vista con función de ventana) ---------------------------
+    $r->agregar('GET', '/reportes/ranking', 'ReporteController@ranking', ['auth' => true]);
+
+    // --- Nodos: estado de la red + falla simulada + recuperación -----------
+    $r->agregar('GET',  '/nodos',                  'NodoAdminController@listar',        ['auth' => true]);
+    $r->agregar('POST', '/nodos/:nodo/estado',     'NodoAdminController@cambiarEstado', ['roles' => ['admin']]);
+    $r->agregar('POST', '/nodos/:nodo/recuperar',  'NodoAdminController@recuperar',     ['roles' => ['admin']]);
+
     // --- Debug / simulación CAP --------------------------------------------
     $r->agregar('POST', '/debug/simular-fallo', 'DebugController@simularFallo', ['roles' => ['admin']]);
 

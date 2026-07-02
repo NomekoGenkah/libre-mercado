@@ -1,0 +1,3 @@
+# La consola PHP + AJAX se sirve como archivos reales (no pasa por el front
+# controller de la API). Al entrar a /ui/ se usa index.php (redirige al panel).
+DirectoryIndex index.php

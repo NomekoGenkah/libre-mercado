@@ -26,6 +26,16 @@ it('id_suc 3 -> este',  fn() => assertSame('este',  Database::getNodoPorSucursal
 it('id_suc inexistente lanza InvalidArgumentException',
     fn() => assertLanza(InvalidArgumentException::class, fn() => Database::getNodoPorSucursal(99)));
 
+// Inverso: nodo -> id_suc (usado por la recuperación de nodos, Tercera Ev.).
+echo "== Database::idSucursalPorNodo ==\n";
+it('norte -> id_suc 1', fn() => assertSame(1, Database::idSucursalPorNodo('norte')));
+it('sur -> id_suc 2',   fn() => assertSame(2, Database::idSucursalPorNodo('sur')));
+it('este -> id_suc 3',  fn() => assertSame(3, Database::idSucursalPorNodo('este')));
+it('round-trip id_suc -> nodo -> id_suc',
+    fn() => assertSame(2, Database::idSucursalPorNodo(Database::getNodoPorSucursal(2))));
+it('nodo inexistente lanza InvalidArgumentException',
+    fn() => assertLanza(InvalidArgumentException::class, fn() => Database::idSucursalPorNodo('oeste')));
+
 // ---------------------------------------------------------------------------
 //  Validador — camino feliz (devuelve valores normalizados)
 // ---------------------------------------------------------------------------

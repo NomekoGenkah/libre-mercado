@@ -89,44 +89,35 @@ class VentaController
             $central->beginTransaction();   // BEGIN coordinador
             $suc->beginTransaction();        // BEGIN participante
 
-            // --- Escrituras en CENTRAL: cabecera + líneas ---
-            $insVenta = $central->prepare(
-                "INSERT INTO ventas (id_cli, id_suc, total, estado)
-                 VALUES (?, ?, ?, 'completada')"
+            // --- CENTRAL: cabecera de la venta vía PROCEDIMIENTO ALMACENADO ---
+            //  sp_registrar_venta corre DENTRO de esta transacción y devuelve el
+            //  id generado. La transacción distribuida se apoya en SPs en ambos
+            //  nodos (Tercera Evaluación, Requisito 2 y 3).
+            $resVenta = Database::llamarProc(
+                $central,
+                "CALL sp_registrar_venta(?, ?, ?)",
+                [$id_cli, $id_suc, $total]
             );
-            $insVenta->execute([$id_cli, $id_suc, $total]);
-            $id_venta = (int) $central->lastInsertId();
+            $id_venta = (int) ($resVenta['id_venta'] ?? 0);
+            if ($id_venta <= 0) {
+                throw new RuntimeException('No se pudo registrar la cabecera de la venta (central).');
+            }
 
-            $insDet = $central->prepare(
-                "INSERT INTO detalle_ventas (id_venta, id_prod, cantidad, precio_unitario)
-                 VALUES (?, ?, ?, ?)"
-            );
-
-            // --- Escrituras en SUCURSAL: descuento de stock + movimiento ---
-            //  El WHERE ... AND cantidad >= ? hace el descuento ATÓMICO y evita
-            //  sobreventa por concurrencia: si otra venta ya bajó el stock, el
-            //  UPDATE afecta 0 filas y abortamos toda la transacción.
-            $updStock = $suc->prepare(
-                "UPDATE stock SET cantidad = cantidad - ?
-                 WHERE id_prod = ? AND id_suc = ? AND cantidad >= ?"
-            );
-            $insMov = $suc->prepare(
-                "INSERT INTO movimientos_stock (id_prod, id_suc, tipo, cantidad, motivo)
-                 VALUES (?, ?, 'venta', ?, ?)"
-            );
-
+            // --- Por línea: detalle (central) + descuento de stock (sucursal) ---
+            //  sp_realizar_compra hace el descuento ATÓMICO y anti-sobreventa; si
+            //  el stock no alcanza o cambió por concurrencia, lanza SIGNAL y toda
+            //  la transacción distribuida se revierte.
             foreach ($lineas as $id_prod => $l) {
-                $insDet->execute([$id_venta, $id_prod, $l['cantidad'], $l['precio_unitario']]);
-
-                $updStock->execute([$l['cantidad'], $id_prod, $id_suc, $l['cantidad']]);
-                if ($updStock->rowCount() !== 1) {
-                    // Verificación del paso 6: el UPDATE debía afectar 1 fila.
-                    throw new RuntimeException(
-                        "Stock insuficiente o concurrente para el producto $id_prod (venta abortada).",
-                        409
-                    );
-                }
-                $insMov->execute([$id_prod, $id_suc, $l['cantidad'], "Venta #$id_venta"]);
+                Database::llamarProc(
+                    $central,
+                    "CALL sp_agregar_detalle_venta(?, ?, ?, ?)",
+                    [$id_venta, $id_prod, $l['cantidad'], $l['precio_unitario']]
+                );
+                Database::llamarProc(
+                    $suc,
+                    "CALL sp_realizar_compra(?, ?, ?, ?)",
+                    [$id_prod, $id_suc, $l['cantidad'], "Venta #$id_venta"]
+                );
             }
 
             // --- FASE 2: commit. Participante primero, luego coordinador. ---
@@ -172,6 +163,16 @@ class VentaController
             if ($e instanceof NodoException) {
                 Response::error("Nodo '{$e->getNodo()}' no disponible: venta revertida.", 503, ['nodo' => $e->getNodo()]);
             }
+            // Errores lanzados por SIGNAL en sp_realizar_compra (stock insuficiente
+            // o concurrencia): MYSQL_ERRNO 1643/1644 -> 409.
+            $mysqlErrno = ($e instanceof PDOException) ? (int) ($e->errorInfo[1] ?? 0) : 0;
+            if (in_array($mysqlErrno, [1643, 1644], true)) {
+                Response::error(
+                    'La venta no se completó (stock insuficiente) y fue revertida.',
+                    409,
+                    ['motivo' => $e->errorInfo[2] ?? null]
+                );
+            }
             $codigo = in_array((int) $e->getCode(), [400, 404, 409], true) ? (int) $e->getCode() : 500;
             Response::error('La venta no se completó y fue revertida: ' . $e->getMessage(), $codigo);
         }
@@ -181,24 +182,21 @@ class VentaController
     public function listar(array $params, array $body): void
     {
         $central = Database::conectarCentral();
-        $sql = "SELECT v.id_venta, v.id_cli, c.nombre AS cliente, v.id_suc,
-                       v.fecha, v.total, v.estado
-                FROM ventas v
-                LEFT JOIN clientes c ON c.id_cli = v.id_cli";
+        $sql = "SELECT * FROM v_ventas";
         $where = [];
         $valores = [];
         if (!empty($_GET['id_suc'])) {
-            $where[] = 'v.id_suc = ?';
+            $where[] = 'id_suc = ?';
             $valores[] = Validador::entero($_GET['id_suc'], 'id_suc', 1);
         }
         if (!empty($_GET['id_cli'])) {
-            $where[] = 'v.id_cli = ?';
+            $where[] = 'id_cli = ?';
             $valores[] = Validador::entero($_GET['id_cli'], 'id_cli', 1);
         }
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
-        $sql .= ' ORDER BY v.fecha DESC, v.id_venta DESC LIMIT 200';
+        $sql .= ' ORDER BY fecha DESC, id_venta DESC LIMIT 200';
 
         $stmt = $central->prepare($sql);
         $stmt->execute($valores);
@@ -211,27 +209,19 @@ class VentaController
         $id = Validador::entero($params['id'] ?? null, 'id', 1);
         $central = Database::conectarCentral();
 
-        $stmt = $central->prepare(
-            "SELECT v.id_venta, v.id_cli, c.nombre AS cliente, v.id_suc,
-                    v.fecha, v.total, v.estado
-             FROM ventas v
-             LEFT JOIN clientes c ON c.id_cli = v.id_cli
-             WHERE v.id_venta = ?"
-        );
+        $stmt = $central->prepare("SELECT * FROM v_ventas WHERE id_venta = ?");
         $stmt->execute([$id]);
         $venta = $stmt->fetch();
         if (!$venta) {
             Response::error("Venta $id no encontrada (nodo central).", 404);
         }
 
-        // detalle_ventas y productos viven en el mismo nodo central -> JOIN directo.
+        // Líneas con nombre de producto y subtotal: resueltos por la vista.
         $det = $central->prepare(
-            "SELECT d.id_prod, p.producto, d.cantidad, d.precio_unitario,
-                    (d.cantidad * d.precio_unitario) AS subtotal
-             FROM detalle_ventas d
-             LEFT JOIN productos p ON p.id_prod = d.id_prod
-             WHERE d.id_venta = ?
-             ORDER BY d.id_detalle"
+            "SELECT id_prod, producto, cantidad, precio_unitario, subtotal
+             FROM v_ventas_detalle
+             WHERE id_venta = ?
+             ORDER BY id_detalle"
         );
         $det->execute([$id]);
 

@@ -3,7 +3,10 @@
 #  Libre Mercado — Pruebas END-TO-END de la API (curl).
 #  Requiere el stack levantado (docker compose up -d). Ejerce el flujo real:
 #  salud, login/roles/logout, CRUD, validación (400), duplicados (409),
-#  guards de auth (401/403) y el semáforo de stock.
+#  guards de auth (401/403), el semáforo de stock (vista v_stock), el ajuste
+#  por procedimiento almacenado, el ranking (vista con función de ventana), la
+#  venta distribuida vía SP, y la FALLA SIMULADA de nodo + recuperación
+#  (sp_reconstruir_stock) de la Tercera Evaluación.
 #
 #  Ejecutar:  bash tests/e2e/api.sh        (o vía tests/run.sh)
 #  Variable:  BASE_URL (por defecto http://localhost:8080)
@@ -130,6 +133,19 @@ check "stock subió exactamente 5" "$((DESPUES + 5))" "$(stock_de 1)"
 req GET /compras
 check "listar compras -> 200" 200 "$HTTP"
 
+echo "== Ajuste de stock (procedimiento almacenado sp_actualizar_stock) =="
+req PUT /stock/1/2 '{"cantidad":33,"motivo":"E2E ajuste"}'
+check "ajustar stock prod 2 suc 1 -> 200" 200 "$HTTP"
+contiene "el SP devuelve cantidad_nueva=33" '"cantidad_nueva":33'
+req GET /movimientos/1
+contiene "el ajuste quedó registrado (tipo 'ajuste')" '"ajuste"'
+
+echo "== Reporte ranking (vista con función de ventana RANK()) =="
+req GET /reportes/ranking
+check "ranking -> 200" 200 "$HTTP"
+contiene "ranking trae unidades_vendidas" '"unidades_vendidas"'
+contiene "ranking trae la columna ranking" '"ranking"'
+
 echo "== Simulación de fallo CAP (/debug/simular-fallo) =="
 req GET /stock/1; CAP_ANTES=$(stock_de 1)
 req POST /debug/simular-fallo '{"id_suc":1,"items":[{"id_prod":1,"cantidad":2}]}'
@@ -138,6 +154,33 @@ contiene "reporta consistencia_preservada:true" '"consistencia_preservada":true'
 contiene "reporta venta_persistida:false (central revirtió)" '"venta_persistida":false'
 req GET /stock/1
 check "stock intacto tras la simulación (rollback CP)" "$CAP_ANTES" "$(stock_de 1)"
+
+echo "== Falla simulada de nodo + recuperación (Tercera Evaluación) =="
+req GET /nodos
+check "listar nodos -> 200" 200 "$HTTP"
+contiene "estado de nodos incluye 'estado'" '"estado"'
+contiene "expone reachability real 'alcanzable'" '"alcanzable"'
+
+req GET /stock/1; N_ANTES=$(stock_de 1)
+req POST /nodos/norte/estado '{"estado":"offline"}'
+check "marcar nodo Norte OFFLINE -> 200" 200 "$HTTP"
+
+# Con el nodo OFFLINE, las operaciones hacia esa sucursal fallan controladas (503).
+req POST /ventas '{"id_cli":1,"id_suc":1,"items":[{"id_prod":1,"cantidad":1}]}'
+check "venta a nodo OFFLINE -> 503 (error controlado)" 503 "$HTTP"
+req GET /stock/1
+check "consultar stock de nodo OFFLINE -> 503" 503 "$HTTP"
+
+# Recuperación: reactiva el nodo y reconstruye stock desde el libro de movimientos.
+req POST /nodos/norte/recuperar
+check "recuperar nodo Norte -> 200" 200 "$HTTP"
+contiene "informe trae cantidad_reconstruida" '"cantidad_reconstruida"'
+req GET /stock/1
+check "tras recuperar, nodo online y stock consistente con el ledger" "$N_ANTES" "$(stock_de 1)"
+
+# El servicio vuelve a estar disponible.
+req POST /ventas '{"id_cli":1,"id_suc":1,"items":[{"id_prod":1,"cantidad":1}]}'
+check "tras recuperar, venta normal -> 201" 201 "$HTTP"
 
 echo "== Roles (403) =="
 req POST /auth/login '{"username":"vendedor","password":"vendedor123"}'

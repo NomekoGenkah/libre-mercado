@@ -238,3 +238,41 @@ pkill socat ; docker compose up -d
 > **cambia a plan B sin dramatizar** ("lo corremos en modo local") y haz la
 > partición con `docker stop nodo_sucursal_este`. El profesor evalúa el
 > **comportamiento CP**, no dónde vive físicamente el nodo.
+
+---
+
+## F. Addendum — Tercera Evaluación (procedimientos, falla simulada, PHP+AJAX)
+
+> Doc técnico: `docs/tercera_evaluacion.md`. La consola evaluada aquí es la de
+> **PHP + AJAX** en **`http://localhost:8080/ui/`** (login `admin`/`admin123`),
+> servida por el mismo `app_php`. El frontend React sigue disponible pero no es
+> el entregable de esta evaluación.
+
+### F.1 Procedimientos almacenados (≈1:00)
+**Decir:** "La venta distribuida ahora se ejecuta con **procedimientos
+almacenados** en ambos nodos: `sp_registrar_venta` (central) y
+`sp_realizar_compra` (sucursal, con el descuento anti-sobreventa). El ajuste usa
+`sp_actualizar_stock` y la compra `sp_reponer_stock`."
+**Evidencia (BD):** `SHOW PROCEDURE STATUS WHERE Db LIKE 'lm_%';`
+
+### F.2 Falla simulada + recuperación (≈2:00) — pantalla *Nodos*
+**Hacer:**
+1. En *Nodos*, pulsa **"Simular falla"** en Norte → queda **OFFLINE** (chip rojo).
+2. En *Ventas*, intenta vender en Norte → **503 controlado** (toast de rollback).
+3. En *Stock* de Norte → **503** (la sucursal no responde).
+4. Vuelve a *Nodos* y pulsa **"Recuperar"** → el nodo vuelve **ONLINE** y se
+   ejecuta `sp_reconstruir_stock`: aparece el **informe antes/reconstruido/Δ**.
+5. Repite la venta en Norte → ahora **funciona** (201).
+
+**Decir:** "El estado OFFLINE es persistente en la tabla `estado_nodos` del
+central. Con el nodo marcado como caído, toda operación hacia esa sucursal
+responde **503** —comportamiento **CP**—. Al recuperarlo, **reconstruimos el
+stock desde el libro de movimientos** (la fuente de verdad): *datos
+sincronizados*."
+
+> Diferencia con la §4 (partición real): allí se **apaga el contenedor**; aquí se
+> **simula la falla desde la UI** sin tocar Docker (Requisito 4 de la Tercera).
+
+### F.3 Pruebas automatizadas (≈0:30)
+`bash tests/run.sh` → incluye compra normal, **nodo apagado → 503**,
+**recuperación → sincronizado**, sobreventa concurrente y CAP.

@@ -72,27 +72,16 @@ class CompraController
                 "INSERT INTO detalle_compras (id_compra, id_prod, cantidad, precio_unitario)
                  VALUES (?, ?, ?, ?)"
             );
-            // UPSERT de stock: si existe la fila, suma; si no, la crea.
-            $selStock = $suc->prepare("SELECT id_stock FROM stock WHERE id_prod = ? AND id_suc = ?");
-            $updStock = $suc->prepare("UPDATE stock SET cantidad = cantidad + ? WHERE id_stock = ?");
-            $insStock = $suc->prepare("INSERT INTO stock (id_prod, id_suc, cantidad, cantidad_minima) VALUES (?, ?, ?, 0)");
-            $insMov   = $suc->prepare(
-                "INSERT INTO movimientos_stock (id_prod, id_suc, tipo, cantidad, motivo)
-                 VALUES (?, ?, 'reabastecimiento', ?, ?)"
-            );
 
             foreach ($lineas as $l) {
                 $insDet->execute([$id_compra, $l['id_prod'], $l['cantidad'], $l['precio_unitario']]);
-
-                $selStock->execute([$l['id_prod'], $id_suc]);
-                $id_stock = $selStock->fetchColumn();
-                if ($id_stock !== false) {
-                    $updStock->execute([$l['cantidad'], $id_stock]);
-                } else {
-                    $insStock->execute([$l['id_prod'], $id_suc, $l['cantidad']]);
-                }
-
-                $insMov->execute([$l['id_prod'], $id_suc, $l['cantidad'], "Compra #$id_compra"]);
+                // Procedimiento: UPSERT de stock + movimiento 'reabastecimiento'.
+                // Corre dentro de ESTA transacción (no abre la suya).
+                Database::llamarProc(
+                    $suc,
+                    "CALL sp_reponer_stock(?, ?, ?, ?)",
+                    [$l['id_prod'], $id_suc, $l['cantidad'], "Compra #$id_compra"]
+                );
             }
 
             $suc->commit();
